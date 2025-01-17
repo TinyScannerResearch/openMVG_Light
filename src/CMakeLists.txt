@@ -22,6 +22,11 @@ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "In-source builds not allowed.")
 endif()
 
+# Reduce MSVC verbosity
+if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4805 /wd4244 /wd4267 /wd4305 /wd4996")
+endif()
+
 set(CMAKE_FIND_FRAMEWORK LAST)
 
 # ==============================================================================
@@ -36,6 +41,10 @@ option(OpenMVG_BUILD_SOFTWARES "Build OpenMVG softwares" ON)
 option(OpenMVG_BUILD_GUI_SOFTWARES "Build OpenMVG GUI softwares (QT5)" ON)
 option(OpenMVG_BUILD_COVERAGE "Enable code coverage generation (gcc only)" OFF)
 option(OpenMVG_USE_OPENMP "Enable OpenMP parallelization" ON)
+option(OpenMVG_USE_RERUN "Enable Rerun logging" ON)
+if (OpenMVG_USE_RERUN)
+  list(APPEND OpenMVG_DEFINITIONS ${STRIPPED_DEF})
+endif(OpenMVG_USE_RERUN)
 # ==============================================================================
 # Opencv is not used by openMVG but some samples show how to use openCV
 #  and openMVG simultaneously
@@ -127,7 +136,7 @@ if (UNIX AND NOT OpenMVG_BUILD_COVERAGE)
 endif ()
 
 # ==============================================================================
-# Check C++11 support
+# Check C++11 compiler support
 # ==============================================================================
 include(CXX11)
 check_for_cxx11_compiler(CXX11_COMPILER)
@@ -310,28 +319,6 @@ if (NOT Ceres_FOUND)
 endif()
 
 # ==============================================================================
-# Flann
-# ==============================================================================
-# - internal by default (flann),
-# - external if FLANN_INCLUDE_DIR_HINTS and a valid Flann setup is found
-# ==============================================================================
-if (NOT DEFINED FLANN_INCLUDE_DIR_HINTS)
-  set(FLANN_INCLUDE_DIR_HINTS ${CMAKE_CURRENT_SOURCE_DIR}/third_party/flann/src/cpp)
-  set(OpenMVG_USE_INTERNAL_FLANN ON)
-  find_package(Flann QUIET)
-else()
-  find_package(Flann QUIET CONFIG)
-  if (TARGET flann::flann)
-    set(FLANN_LIBRARIES "flann::flann;flann::flann_cpp")
-  else()
-    find_package(Flann QUIET)
-  endif()
-endif()
-if (NOT FLANN_FOUND OR OpenMVG_USE_INTERNAL_FLANN)
-  set(FLANN_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/third_party/flann/src/cpp)
-endif()
-
-# ==============================================================================
 # CoinUtils
 # ==============================================================================
 # - internal by default (CoinUtils),
@@ -388,6 +375,7 @@ if (OpenMVG_USE_INTERNAL_OSI AND OpenMVG_USE_INTERNAL_CLP AND OpenMVG_USE_INTERN
   add_subdirectory(dependencies/osi_clp/)
   set_property(TARGET lib_clp PROPERTY FOLDER OpenMVG/3rdParty/lib_clp)
   set_property(TARGET lib_CoinUtils PROPERTY FOLDER OpenMVG/3rdParty/lib_CoinUtils)
+  set_property(TARGET lib_CoinUtils PROPERTY CXX_STANDARD 11)
   set_property(TARGET lib_Osi PROPERTY FOLDER OpenMVG/3rdParty/lib_Osi)
   set_property(TARGET lib_OsiClpSolver PROPERTY FOLDER OpenMVG/3rdParty/lib_OsiClpSolver)
 endif()
@@ -431,6 +419,19 @@ endif()
 # ==============================================================================
 if (OpenMVG_USE_LIGT)
     add_definitions(-DUSE_PATENTED_LIGT)
+endif()
+
+
+# ==============================================================================
+# Rerun
+# ==============================================================================
+# - enabled only if OpenMVG_USE_RERUN is set to ON
+# ==============================================================================
+if (OpenMVG_USE_RERUN)
+  include(FetchContent)
+  FetchContent_Declare(rerun_sdk URL
+    https://github.com/rerun-io/rerun/releases/download/prerelease/rerun_cpp_sdk.zip)
+  FetchContent_MakeAvailable(rerun_sdk)
 endif()
 
 
@@ -518,11 +519,13 @@ message("** Build OpenMVG GUI softwares: " ${OpenMVG_BUILD_GUI_SOFTWARES})
 message("** Build OpenMVG documentation: " ${OpenMVG_BUILD_DOC})
 message("** Build OpenMVG samples applications: " ${OpenMVG_BUILD_EXAMPLES})
 message("** Build OpenMVG openGL examples: " ${OpenMVG_BUILD_OPENGL_EXAMPLES})
+message("** Use Rerun logging: " ${OpenMVG_USE_RERUN})
 message("** Enable code coverage generation: " ${OpenMVG_BUILD_COVERAGE})
 message("** Enable OpenMP parallelization: " ${OpenMVG_USE_OPENMP})
 message("** Build OpenCV+OpenMVG samples programs: " ${OpenMVG_USE_OPENCV})
 message("** Use OpenCV SIFT features: " ${OpenMVG_USE_OCVSIFT})
 message("** Use LiGT for global translation estimation: " ${OpenMVG_USE_LIGT})
+
 
 message("\n")
 
@@ -542,12 +545,6 @@ if (DEFINED OpenMVG_USE_INTERNAL_CERES)
   message(STATUS "CERES: " ${CERES_VERSION} " (internal)")
 else()
   message(STATUS "CERES: " ${CERES_VERSION} " (external)")
-endif()
-
-if (DEFINED OpenMVG_USE_INTERNAL_FLANN)
-  message(STATUS "FLANN: " ${FLANN_VERSION} " (internal)")
-else()
-  message(STATUS "FLANN: " ${FLANN_VERSION} " (external)")
 endif()
 
 if (DEFINED OpenMVG_USE_INTERNAL_TIFF)
