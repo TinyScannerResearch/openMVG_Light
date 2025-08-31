@@ -139,8 +139,6 @@ int main(int argc, char **argv)
   std::string sPriorWeights = "1.0;1.0;1.0";
   std::pair<bool, Vec3> prior_w_info(false, Vec3());
 
-  int i_User_camera_model = PINHOLE_CAMERA_RADIAL3;
-
   bool b_Group_camera_model = true;
 
   int i_GPS_XYZ_method = 0;
@@ -148,7 +146,6 @@ int main(int argc, char **argv)
   cmd.add( make_option('i', sImageDir, "imageDirectory") );
   cmd.add( make_option('o', sOutputDir, "outputDirectory") );
   cmd.add( make_option('k', sKmatrix, "intrinsics") );
-  cmd.add( make_option('c', i_User_camera_model, "camera_model") );
   cmd.add( make_option('g', b_Group_camera_model, "group_camera_model") );
   cmd.add( make_switch('P', "use_pose_prior") );
   cmd.add( make_option('W', sPriorWeights, "prior_weights"));
@@ -162,13 +159,6 @@ int main(int argc, char **argv)
       << "[-i|--imageDirectory]\n"
       << "[-o|--outputDirectory]\n"
       << "[-k|--intrinsics] Kmatrix: \"f;0;ppx;0;f;ppy;0;0;1\"\n"
-      << "[-c|--camera_model] Camera model type:\n"
-      << "\t" << static_cast<int>(PINHOLE_CAMERA) << ": Pinhole\n"
-      << "\t" << static_cast<int>(PINHOLE_CAMERA_RADIAL1) << ": Pinhole radial 1\n"
-      << "\t" << static_cast<int>(PINHOLE_CAMERA_RADIAL3) << ": Pinhole radial 3 (default)\n"
-      << "\t" << static_cast<int>(PINHOLE_CAMERA_BROWN) << ": Pinhole brown 2\n"
-      << "\t" << static_cast<int>(PINHOLE_CAMERA_FISHEYE) << ": Pinhole with a simple Fish-eye distortion\n"
-      << "\t" << static_cast<int>(CAMERA_SPHERICAL) << ": Spherical camera\n"
       << "[-g|--group_camera_model]\n"
       << "\t 0-> each view have it's own camera intrinsic parameters,\n"
       << "\t 1-> (default) view can share some camera intrinsic parameters\n"
@@ -188,7 +178,6 @@ int main(int argc, char **argv)
     << "\n--imageDirectory " << sImageDir
     << "\n--outputDirectory " << sOutputDir
     << "\n--intrinsics " << sKmatrix
-    << "\n--camera_model " << i_User_camera_model
     << "\n--group_camera_model " << b_Group_camera_model
     << "\n--use_pose_prior " << b_Use_pose_prior
     << "\n--prior_weights " << sPriorWeights
@@ -196,8 +185,6 @@ int main(int argc, char **argv)
 
   // Expected properties for each image
   double width = -1, height = -1, focal = -1, ppx = -1,  ppy = -1;
-
-  const EINTRINSIC e_User_camera_model = EINTRINSIC(i_User_camera_model);
 
   if ( !stlplus::folder_exists( sImageDir ) )
   {
@@ -302,38 +289,15 @@ int main(int argc, char **argv)
 
     if (focal > 0 && ppx > 0 && ppy > 0 && width > 0 && height > 0)
     {
-      // Create the desired camera type
-      switch (e_User_camera_model)
-      {
-        case PINHOLE_CAMERA:
-          intrinsic = std::make_shared<Pinhole_Intrinsic>
-            (width, height, focal, ppx, ppy);
-        break;
-        case PINHOLE_CAMERA_RADIAL1:
-          intrinsic = std::make_shared<Pinhole_Intrinsic_Radial_K1>
-            (width, height, focal, ppx, ppy, 0.0); // setup no distortion as initial guess
-        break;
-        case PINHOLE_CAMERA_RADIAL3:
-          intrinsic = std::make_shared<Pinhole_Intrinsic_Radial_K3>
-            (width, height, focal, ppx, ppy, 0.0, 0.0, 0.0);  // setup no distortion as initial guess
-        break;
-        case PINHOLE_CAMERA_BROWN:
-          intrinsic = std::make_shared<Pinhole_Intrinsic_Brown_T2>
-            (width, height, focal, ppx, ppy, 0.0, 0.0, 0.0, 0.0, 0.0); // setup no distortion as initial guess
-        break;
-        case PINHOLE_CAMERA_FISHEYE:
-          intrinsic = std::make_shared<Pinhole_Intrinsic_Fisheye>
-            (width, height, focal, ppx, ppy, 0.0, 0.0, 0.0, 0.0); // setup no distortion as initial guess
-        break;
-        case CAMERA_SPHERICAL:
-           intrinsic = std::make_shared<Intrinsic_Spherical>
-             (width, height);
-        break;
-        default:
-          OPENMVG_LOG_ERROR << "Error: unknown camera model: " << (int) e_User_camera_model;
-          return EXIT_FAILURE;
-      }
+      // We are using only pinhole camera radial-3.
+      // setup no distortion as initial guess
+      intrinsic = std::make_shared<Pinhole_Intrinsic_Radial_K3>(width, height, focal, ppx, ppy, 0.0, 0.0, 0.0);
     }
+    else
+    {
+      OPENMVG_LOG_ERROR << "Invalid camera parameters";
+      return EXIT_FAILURE;
+    } 
 
     // Build the view corresponding to the image
     Vec3 pose_center;
