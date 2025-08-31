@@ -133,7 +133,6 @@ int main(int argc, char **argv)
   CmdLine cmd;
 
   std::string sImageDir,
-    sfileDatabase = "",
     sOutputDir = "",
     sKmatrix;
 
@@ -146,12 +145,8 @@ int main(int argc, char **argv)
 
   int i_GPS_XYZ_method = 0;
 
-  double focal_pixels = -1.0;
-
   cmd.add( make_option('i', sImageDir, "imageDirectory") );
-  cmd.add( make_option('d', sfileDatabase, "sensorWidthDatabase") );
   cmd.add( make_option('o', sOutputDir, "outputDirectory") );
-  cmd.add( make_option('f', focal_pixels, "focal") );
   cmd.add( make_option('k', sKmatrix, "intrinsics") );
   cmd.add( make_option('c', i_User_camera_model, "camera_model") );
   cmd.add( make_option('g', b_Group_camera_model, "group_camera_model") );
@@ -165,9 +160,7 @@ int main(int argc, char **argv)
   } catch (const std::string& s) {
     OPENMVG_LOG_INFO << "Usage: " << argv[0] << '\n'
       << "[-i|--imageDirectory]\n"
-      << "[-d|--sensorWidthDatabase]\n"
       << "[-o|--outputDirectory]\n"
-      << "[-f|--focal] (pixels)\n"
       << "[-k|--intrinsics] Kmatrix: \"f;0;ppx;0;f;ppy;0;0;1\"\n"
       << "[-c|--camera_model] Camera model type:\n"
       << "\t" << static_cast<int>(PINHOLE_CAMERA) << ": Pinhole\n"
@@ -193,9 +186,7 @@ int main(int argc, char **argv)
   const bool b_Use_pose_prior = cmd.used('P');
   OPENMVG_LOG_INFO << " You called : " << argv[0]
     << "\n--imageDirectory " << sImageDir
-    << "\n--sensorWidthDatabase " << sfileDatabase
     << "\n--outputDirectory " << sOutputDir
-    << "\n--focal " << focal_pixels
     << "\n--intrinsics " << sKmatrix
     << "\n--camera_model " << i_User_camera_model
     << "\n--group_camera_model " << b_Group_camera_model
@@ -229,29 +220,16 @@ int main(int argc, char **argv)
     }
   }
 
-  if (sKmatrix.size() > 0 &&
-    !checkIntrinsicStringValidity(sKmatrix, focal, ppx, ppy) )
+  if (!(sKmatrix.size() > 0))
+  {
+    OPENMVG_LOG_ERROR << "No K matrix input";
+    return EXIT_FAILURE;
+  }
+
+  if (!checkIntrinsicStringValidity(sKmatrix, focal, ppx, ppy) )
   {
     OPENMVG_LOG_ERROR << "Invalid K matrix input";
     return EXIT_FAILURE;
-  }
-
-  if (sKmatrix.size() > 0 && focal_pixels != -1.0)
-  {
-    OPENMVG_LOG_ERROR << "Cannot combine -f and -k options";
-    return EXIT_FAILURE;
-  }
-
-  std::vector<Datasheet> vec_database;
-  if (!sfileDatabase.empty())
-  {
-    if ( !parseDatabase( sfileDatabase, vec_database ) )
-    {
-      OPENMVG_LOG_ERROR
-       << "Invalid input database: " << sfileDatabase
-       << ", please specify a valid file.";
-      return EXIT_FAILURE;
-    }
   }
 
   // Check if prior weights are given
@@ -306,58 +284,18 @@ int main(int argc, char **argv)
     ppx = width / 2.0;
     ppy = height / 2.0;
 
-
-    // Consider the case where the focal is provided manually
-    if (sKmatrix.size() > 0) // Known user calibration K matrix
+    // We only consider the case where the K is provided manually
+    if (!checkIntrinsicStringValidity(sKmatrix, focal, ppx, ppy))
     {
-      if (!checkIntrinsicStringValidity(sKmatrix, focal, ppx, ppy))
-        focal = -1.0;
+      OPENMVG_LOG_ERROR << "Invalid K matrix input";
+      return EXIT_FAILURE;
     }
-    else // User provided focal length value
-      if (focal_pixels != -1 )
-        focal = focal_pixels;
 
     // If not manually provided or wrongly provided
     if (focal == -1)
     {
-      Exif_IO_EasyExif exifReader;
-      exifReader.open( sImageFilename );
-
-      const bool bHaveValidExifMetadata =
-        exifReader.doesHaveExifInfo()
-        && !exifReader.getModel().empty()
-        && !exifReader.getBrand().empty();
-
-      if (bHaveValidExifMetadata) // If image contains meta data
-      {
-        // Handle case where focal length is equal to 0
-        if (exifReader.getFocal() == 0.0f)
-        {
-          error_report_stream
-            << stlplus::basename_part(sImageFilename) << ": Focal length is missing." << "\n";
-          focal = -1.0;
-        }
-        else
-        // Create the image entry in the list file
-        {
-          const std::string sCamModel = exifReader.getBrand() + " " + exifReader.getModel();
-
-          Datasheet datasheet;
-          if ( getInfo( sCamModel, vec_database, datasheet ))
-          {
-            // The camera model was found in the database so we can compute it's approximated focal length
-            const double ccdw = datasheet.sensorSize_;
-            focal = std::max ( width, height ) * exifReader.getFocal() / ccdw;
-          }
-          else
-          {
-            error_report_stream
-              << stlplus::basename_part(sImageFilename)
-              << "\" model \"" << sCamModel << "\" doesn't exist in the database" << "\n"
-              << "Please consider add your camera model and sensor width in the database." << "\n";
-          }
-        }
-      }
+      OPENMVG_LOG_ERROR << "focal value cannot be set";
+      return EXIT_FAILURE;
     }
     // Build intrinsic parameter related to the view
     std::shared_ptr<IntrinsicBase> intrinsic;
