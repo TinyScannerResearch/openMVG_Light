@@ -24,7 +24,3 @@ add_subdirectory(geodesy_show_exif_gps_position)
 add_subdirectory(image_spherical_to_pinholes)
 add_subdirectory(image_undistort_gui)
 add_subdirectory(image_spherical_to_cubic)
-
-if (OpenMVG_USE_RERUN)
-  add_subdirectory(visualize_sfm_data)
-endif(OpenMVG_USE_RERUN)
