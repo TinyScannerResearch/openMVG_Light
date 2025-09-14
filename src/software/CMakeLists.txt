@@ -19,5 +19,3 @@ if (OpenMVG_BUILD_GUI_SOFTWARES)
     message("** Qt5 not found, GUI modules will not be build")
   endif (Qt5_FOUND)
 endif (OpenMVG_BUILD_GUI_SOFTWARES)
-
-add_subdirectory( SfMWebGLViewer )
