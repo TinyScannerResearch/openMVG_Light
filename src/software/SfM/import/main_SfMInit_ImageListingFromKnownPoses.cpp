@@ -10,7 +10,6 @@
 #include "openMVG/cameras/PinholeCamera.hpp"
 #include "openMVG/geometry/pose3.hpp"
 #include "openMVG/exif/exif_IO_EasyExif.hpp"
-#include "openMVG/exif/sensor_width_database/ParseDatabase.hpp"
 #include "openMVG/geodesy/geodesy.hpp"
 #include "openMVG/image/image_io.hpp"
 #include "openMVG/numeric/eigen_alias_definition.hpp"
