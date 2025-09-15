@@ -36,7 +36,6 @@ option(OpenMVG_BUILD_SHARED "Build OpenMVG shared libs" OFF)
 option(OpenMVG_BUILD_TESTS "Build OpenMVG tests" OFF)
 option(OpenMVG_BUILD_DOC "Build OpenMVG documentation" ON)
 option(OpenMVG_BUILD_EXAMPLES "Build OpenMVG samples applications." ON)
-option(OpenMVG_BUILD_OPENGL_EXAMPLES "Build OpenMVG openGL examples" OFF)
 option(OpenMVG_BUILD_SOFTWARES "Build OpenMVG softwares" ON)
 option(OpenMVG_BUILD_GUI_SOFTWARES "Build OpenMVG GUI softwares (QT5)" ON)
 option(OpenMVG_BUILD_COVERAGE "Enable code coverage generation (gcc only)" OFF)
@@ -206,21 +205,6 @@ find_package(TIFF QUIET)
 
 # Folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-# ==============================================================================
-# SUBMODULE CONFIGURATION
-# ==============================================================================
-#- glfw
-# ==============================================================================
-if (OpenMVG_BUILD_OPENGL_EXAMPLES)
-  set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Do not build the GLFW example programs")
-  set(GLFW_BUILD_TESTS    OFF CACHE BOOL "Do not build the GLFW tests programs")
-  set(GLFW_BUILD_DOCS     OFF CACHE BOOL "Do not build the GLFW documentation")
-  set(GLFW_INSTALL        OFF CACHE BOOL "Do not generate the GLFW installation target")
-  add_subdirectory(dependencies/glfw)
-  include_directories(SYSTEM dependencies/glfw/include)
-  set_property(TARGET glfw PROPERTY FOLDER OpenMVG/3rdParty/glfw)
-endif (OpenMVG_BUILD_OPENGL_EXAMPLES)
 
 # Dependencies install rules
 install(
@@ -524,7 +508,6 @@ message("** Build OpenMVG softwares: " ${OpenMVG_BUILD_SOFTWARES})
 message("** Build OpenMVG GUI softwares: " ${OpenMVG_BUILD_GUI_SOFTWARES})
 message("** Build OpenMVG documentation: " ${OpenMVG_BUILD_DOC})
 message("** Build OpenMVG samples applications: " ${OpenMVG_BUILD_EXAMPLES})
-message("** Build OpenMVG openGL examples: " ${OpenMVG_BUILD_OPENGL_EXAMPLES})
 message("** Use Rerun logging: " ${OpenMVG_USE_RERUN})
 message("** Enable code coverage generation: " ${OpenMVG_BUILD_COVERAGE})
 message("** Enable OpenMP parallelization: " ${OpenMVG_USE_OPENMP})
