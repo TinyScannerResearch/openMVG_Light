@@ -40,10 +40,6 @@ option(OpenMVG_BUILD_SOFTWARES "Build OpenMVG softwares" ON)
 option(OpenMVG_BUILD_GUI_SOFTWARES "Build OpenMVG GUI softwares (QT5)" ON)
 option(OpenMVG_BUILD_COVERAGE "Enable code coverage generation (gcc only)" OFF)
 option(OpenMVG_USE_OPENMP "Enable OpenMP parallelization" ON)
-option(OpenMVG_USE_RERUN "Enable Rerun logging" ON)
-if (OpenMVG_USE_RERUN)
-  list(APPEND OpenMVG_DEFINITIONS ${STRIPPED_DEF})
-endif(OpenMVG_USE_RERUN)
 # ==============================================================================
 # Opencv is not used by openMVG but some samples show how to use openCV
 #  and openMVG simultaneously
@@ -413,19 +409,6 @@ endif()
 
 
 # ==============================================================================
-# Rerun
-# ==============================================================================
-# - enabled only if OpenMVG_USE_RERUN is set to ON
-# ==============================================================================
-if (OpenMVG_USE_RERUN)
-  include(FetchContent)
-  FetchContent_Declare(rerun_sdk URL
-    https://github.com/rerun-io/rerun/releases/download/prerelease/rerun_cpp_sdk.zip)
-  FetchContent_MakeAvailable(rerun_sdk)
-endif()
-
-
-# ==============================================================================
 # Third-party libraries:
 # ==============================================================================
 add_subdirectory(third_party)
@@ -508,7 +491,11 @@ message("** Build OpenMVG softwares: " ${OpenMVG_BUILD_SOFTWARES})
 message("** Build OpenMVG GUI softwares: " ${OpenMVG_BUILD_GUI_SOFTWARES})
 message("** Build OpenMVG documentation: " ${OpenMVG_BUILD_DOC})
 message("** Build OpenMVG samples applications: " ${OpenMVG_BUILD_EXAMPLES})
+<<<<<<< HEAD
+message("** Build OpenMVG openGL examples: " ${OpenMVG_BUILD_OPENGL_EXAMPLES})
+=======
 message("** Use Rerun logging: " ${OpenMVG_USE_RERUN})
+>>>>>>> develop
 message("** Enable code coverage generation: " ${OpenMVG_BUILD_COVERAGE})
 message("** Enable OpenMP parallelization: " ${OpenMVG_USE_OPENMP})
 message("** Build OpenCV+OpenMVG samples programs: " ${OpenMVG_USE_OPENCV})
