@@ -3,10 +3,6 @@ add_subdirectory(Localization)
 add_subdirectory(Geodesy)
 #add_subdirectory(opencv)
 
-if (OpenMVG_BUILD_OPENGL_EXAMPLES)
-  add_subdirectory(SfMViewer)
-endif (OpenMVG_BUILD_OPENGL_EXAMPLES)
-
 add_subdirectory(colorHarmonize)
 add_subdirectory(VO)
 
@@ -19,5 +15,3 @@ if (OpenMVG_BUILD_GUI_SOFTWARES)
     message("** Qt5 not found, GUI modules will not be build")
   endif (Qt5_FOUND)
 endif (OpenMVG_BUILD_GUI_SOFTWARES)
-
-add_subdirectory( SfMWebGLViewer )

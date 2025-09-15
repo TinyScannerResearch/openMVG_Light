@@ -8,7 +8,6 @@
 
 #include "openMVG/cameras/cameras.hpp"
 #include "openMVG/exif/exif_IO_EasyExif.hpp"
-#include "openMVG/exif/sensor_width_database/ParseDatabase.hpp"
 #include "openMVG/geodesy/geodesy.hpp"
 #include "openMVG/image/image_io.hpp"
 #include "openMVG/numeric/eigen_alias_definition.hpp"
@@ -17,6 +16,7 @@
 #include "openMVG/sfm/sfm_data_utils.hpp"
 #include "openMVG/sfm/sfm_view.hpp"
 #include "openMVG/sfm/sfm_view_priors.hpp"
+#include "openMVG/stl/split.hpp"
 #include "openMVG/system/loggerprogress.hpp"
 #include "openMVG/types.hpp"
 

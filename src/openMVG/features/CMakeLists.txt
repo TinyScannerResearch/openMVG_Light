@@ -44,6 +44,4 @@ UNIT_TEST(openMVG features "openMVG_features")
 UNIT_TEST(openMVG image_describer "openMVG_features;${STLPLUS_LIBRARY}")
 
 add_subdirectory(akaze)
-add_subdirectory(mser)
 add_subdirectory(sift)
-add_subdirectory(tbmr)
