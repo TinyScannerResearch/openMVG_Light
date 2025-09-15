@@ -12,7 +12,6 @@ add_subdirectory(multiview_robust_essential_ba)
 add_subdirectory(exif_Parsing)
 
 add_subdirectory(features_repeatability)
-add_subdirectory(features_affine_demo)
 add_subdirectory(features_kvld_filter)
 add_subdirectory(features_siftPutativeMatches)
 add_subdirectory(features_image_matching)
