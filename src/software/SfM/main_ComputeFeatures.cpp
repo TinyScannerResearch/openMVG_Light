@@ -21,7 +21,6 @@
 #include "openMVG/system/timer.hpp"
 
 #include "third_party/cmdLine/cmdLine.h"
-#include "third_party/stlplus3/filesystemSimplified/file_system.hpp"
 
 #include "nonFree/sift/SIFT_describer_io.hpp"
 
@@ -29,12 +28,15 @@
 
 #include <atomic>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <string>
 
 #ifdef OPENMVG_USE_OPENMP
 #include <omp.h>
 #endif
+
+namespace fs = std::filesystem;
 
 using namespace openMVG;
 using namespace openMVG::image;
@@ -139,9 +141,9 @@ int main(int argc, char **argv)
   }
 
   // Create output dir
-  if (!stlplus::folder_exists(sOutDir))
+  if (!fs::exists(sOutDir))
   {
-    if (!stlplus::folder_create(sOutDir))
+    if (!fs::create_directories(sOutDir))
     {
       OPENMVG_LOG_ERROR << "Cannot create output directory";
       return EXIT_FAILURE;
@@ -165,8 +167,8 @@ int main(int argc, char **argv)
   using namespace openMVG::features;
   std::unique_ptr<Image_describer> image_describer;
 
-  const std::string sImage_describer = stlplus::create_filespec(sOutDir, "image_describer", "json");
-  if (!bForce && stlplus::is_file(sImage_describer))
+  const std::string sImage_describer = (fs::path(sOutDir) / "image_describer.json").string();
+  if (!bForce && fs::is_regular_file(sImage_describer))
   {
     // Dynamically load the image_describer from the file (will restore old used settings)
     std::ifstream stream(sImage_describer.c_str());
@@ -270,13 +272,12 @@ int main(int argc, char **argv)
       Views::const_iterator iterViews = sfm_data.views.begin();
       std::advance(iterViews, i);
       const View * view = iterViews->second.get();
-      const std::string
-        sView_filename = stlplus::create_filespec(sfm_data.s_root_path, view->s_Img_path),
-        sFeat = stlplus::create_filespec(sOutDir, stlplus::basename_part(sView_filename), "feat"),
-        sDesc = stlplus::create_filespec(sOutDir, stlplus::basename_part(sView_filename), "desc");
+      const std::string sView_filename = (fs::path(sfm_data.s_root_path) / view->s_Img_path).string();
+      const std::string sFeat = (fs::path(sOutDir) / (fs::path(sView_filename).stem().string() + ".feat")).string();
+      const std::string sDesc = (fs::path(sOutDir) / (fs::path(sView_filename).stem().string() + ".desc")).string();
 
       // If features or descriptors file are missing, compute them
-      if (!preemptive_exit && (bForce || !stlplus::file_exists(sFeat) || !stlplus::file_exists(sDesc)))
+      if (!preemptive_exit && (bForce || !fs::exists(sFeat) || !fs::exists(sDesc)))
       {
         if (!ReadImage(sView_filename.c_str(), &imageGray))
           continue;
@@ -286,16 +287,13 @@ int main(int argc, char **argv)
         //
         Image<unsigned char> * mask = nullptr; // The mask is null by default
 
-        const std::string
-          mask_filename_local =
-            stlplus::create_filespec(sfm_data.s_root_path,
-              stlplus::basename_part(sView_filename) + "_mask", "png"),
-          mask_filename_global =
-            stlplus::create_filespec(sfm_data.s_root_path, "mask", "png");
+        const std::string mask_filename_local =
+            (fs::path(sfm_data.s_root_path) / (fs::path(sView_filename).stem().string() + "_mask" + ".png")).string();
+        const std::string mask_filename_global = (fs::path(sfm_data.s_root_path) / "mask.png").string();
 
         Image<unsigned char> imageMask;
         // Try to read the local mask
-        if (stlplus::file_exists(mask_filename_local))
+        if (fs::exists(mask_filename_local))
         {
           if (!ReadImage(mask_filename_local.c_str(), &imageMask))
           {
@@ -312,7 +310,7 @@ int main(int argc, char **argv)
         else
         {
           // Try to read the global mask
-          if (stlplus::file_exists(mask_filename_global))
+          if (fs::exists(mask_filename_global))
           {
             if (!ReadImage(mask_filename_global.c_str(), &imageMask))
             {

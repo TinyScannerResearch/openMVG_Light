@@ -29,12 +29,14 @@
 #include "openMVG/sfm/pipelines/stellar/sfm_stellar_engine.hpp"
 
 #include "third_party/cmdLine/cmdLine.h"
-#include "third_party/stlplus3/filesystemSimplified/file_system.hpp"
 
 #include <cstdlib>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <utility>
+
+namespace fs = std::filesystem;
 
 using namespace openMVG;
 using namespace openMVG::cameras;
@@ -135,7 +137,7 @@ bool computeIndexFromImageNames(
      it != sfm_data.GetViews().end(); ++it)
   {
     const View * v = it->second.get();
-    const std::string filename = stlplus::filename_part(v->s_Img_path);
+    const std::string filename = fs::path(v->s_Img_path).filename().string();
     if (filename == initialPairName.first)
     {
       initialPairIndex.first = v->id_view;
@@ -418,9 +420,9 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
-  if (!stlplus::folder_exists(directory_output))
+  if (!fs::exists(directory_output) && fs::is_directory(directory_output))
   {
-    if (!stlplus::folder_create(directory_output))
+    if (!fs::create_directory(directory_output))
     {
       OPENMVG_LOG_ERROR << "Cannot create the output directory";
       return EXIT_FAILURE;
@@ -430,15 +432,16 @@ int main(int argc, char **argv)
   //
   // Match and features
   //
-  if (directory_match.empty() && !filename_match.empty() && stlplus::file_exists(filename_match))
+  if (directory_match.empty() && !filename_match.empty() && fs::exists(filename_match) && fs::is_regular_file(filename_match)
+)
   {
-    directory_match = stlplus::folder_part(filename_match);
-    filename_match = stlplus::filename_part(filename_match);
+    directory_match = fs::path(filename_match).parent_path().string();
+    filename_match  = fs::path(filename_match).filename().string();
   }
 
   // Init the regions_type from the image describer file (used for image regions extraction)
   using namespace openMVG::features;
-  const std::string sImage_describer = stlplus::create_filespec(directory_match, "image_describer", "json");
+  const std::string sImage_describer = (fs::path(directory_match) / "image_describer.json").string();
   std::unique_ptr<Regions> regions_type = Init_region_type_from_file(sImage_describer);
   if (!regions_type)
   {
@@ -456,11 +459,11 @@ int main(int argc, char **argv)
   std::shared_ptr<Matches_Provider> matches_provider = std::make_shared<Matches_Provider>();
   if // Try to read the provided match filename or the default one (matches.f.txt/bin)
   (
-  !(matches_provider->load(sfm_data, stlplus::create_filespec(directory_match, filename_match)) ||
-      matches_provider->load(sfm_data, stlplus::create_filespec(directory_match, "matches.f.txt")) ||
-      matches_provider->load(sfm_data, stlplus::create_filespec(directory_match, "matches.f.bin")) ||
-      matches_provider->load(sfm_data, stlplus::create_filespec(directory_match, "matches.e.txt")) ||
-      matches_provider->load(sfm_data, stlplus::create_filespec(directory_match, "matches.e.bin")))
+  !(matches_provider->load(sfm_data, (fs::path(directory_match) / filename_match).string()) ||
+      matches_provider->load(sfm_data, (fs::path(directory_match) / "matches.f.txt").string()) ||
+      matches_provider->load(sfm_data, (fs::path(directory_match) / "matches.f.bin").string()) ||
+      matches_provider->load(sfm_data, (fs::path(directory_match) / "matches.e.txt").string()) ||
+      matches_provider->load(sfm_data, (fs::path(directory_match) / "matches.e.bin").string()))
       )
   {
     OPENMVG_LOG_ERROR << "Cannot load the match file.";
@@ -509,7 +512,7 @@ int main(int argc, char **argv)
         new SequentialSfMReconstructionEngine(
           sfm_data,
           directory_output,
-          stlplus::create_filespec(directory_output, "Reconstruction_Report.html"));
+          (fs::path(directory_output) / "Reconstruction_Report.html").string());
 
     // Configuration:
     engine->SetFeaturesProvider(feats_provider.get());
@@ -543,7 +546,7 @@ int main(int argc, char **argv)
           scene_initializer.get(),
           sfm_data,
           directory_output,
-          stlplus::create_filespec(directory_output, "Reconstruction_Report.html"));
+          (fs::path(directory_output) / "Reconstruction_Report.html").string());
 
     // Configuration:
     engine->SetFeaturesProvider(feats_provider.get());
@@ -563,7 +566,7 @@ int main(int argc, char **argv)
         new GlobalSfMReconstructionEngine_RelativeMotions(
           sfm_data,
           directory_output,
-          stlplus::create_filespec(directory_output, "Reconstruction_Report.html"));
+          (fs::path(directory_output) / "Reconstruction_Report.html").string());
 
     // Configuration:
     engine->SetFeaturesProvider(feats_provider.get());
@@ -582,7 +585,7 @@ int main(int argc, char **argv)
       new StellarSfMReconstructionEngine(
         sfm_data,
         directory_output,
-        stlplus::create_filespec(directory_output, "Reconstruction_Report.html"));
+        (fs::path(directory_output) / "Reconstruction_Report.html").string());
 
     // Configure the features_provider & the matches_provider
     engine->SetFeaturesProvider(feats_provider.get());
@@ -619,16 +622,16 @@ int main(int argc, char **argv)
 
     OPENMVG_LOG_INFO << "...Generating SfM_Report.html";
     Generate_SfM_Report(sfm_engine->Get_SfM_Data(),
-              stlplus::create_filespec(directory_output, "SfMReconstruction_Report.html"));
+              (fs::path(directory_output) / "SfMReconstruction_Report.html").string());
 
     //-- Export to disk computed scene (data & viewable results)
     OPENMVG_LOG_INFO << "...Export SfM_Data to disk.";
     Save(sfm_engine->Get_SfM_Data(),
-       stlplus::create_filespec(directory_output, "sfm_data", ".bin"),
+       (fs::path(directory_output) / "sfm_data.bin").string(),
        ESfM_Data(ALL));
 
     Save(sfm_engine->Get_SfM_Data(),
-       stlplus::create_filespec(directory_output, "cloud_and_poses", ".ply"),
+       (fs::path(directory_output) / "cloud_and_poses.ply").string(),
        ESfM_Data(ALL));
 
     return EXIT_SUCCESS;

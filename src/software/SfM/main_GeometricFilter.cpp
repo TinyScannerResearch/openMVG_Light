@@ -32,13 +32,15 @@
 #include "openMVG/system/timer.hpp"
 
 #include "third_party/cmdLine/cmdLine.h"
-#include "third_party/stlplus3/filesystemSimplified/file_system.hpp"
 
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <locale>
 #include <memory>
 #include <string>
+
+namespace fs = std::filesystem;
 
 using namespace openMVG;
 using namespace openMVG::matching;
@@ -159,7 +161,7 @@ int main( int argc, char** argv )
     return EXIT_FAILURE;
   }
 
-  const std::string sMatchesDirectory = stlplus::folder_part( sPutativeMatchesFilename );
+  const std::string sMatchesDirectory = fs::path(sPutativeMatchesFilename).parent_path().string();
 
   EGeometricModel eGeometricModelToCompute = FUNDAMENTAL_MATRIX;
   switch ( std::tolower(sGeometricModel[ 0 ], std::locale()) )
@@ -211,7 +213,7 @@ int main( int argc, char** argv )
   // Init the regions_type from the image describer file (used for image regions extraction)
   using namespace openMVG::features;
   // Consider that the image_describer.json is inside the matches directory (which is bellow the sfm_data.bin)
-  const std::string        sImage_describer = stlplus::create_filespec( sMatchesDirectory, "image_describer.json" );
+  const std::string        sImage_describer = (fs::path(sMatchesDirectory) / "image_describer.json").string();
   std::unique_ptr<Regions> regions_type     = Init_region_type_from_file( sImage_describer );
   if ( !regions_type )
   {
@@ -387,7 +389,7 @@ int main( int argc, char** argv )
 
     PairWiseMatchingToAdjacencyMatrixSVG( sfm_data.GetViews().size(),
                                           map_GeometricMatches,
-                                          stlplus::create_filespec( sMatchesDirectory, "GeometricAdjacencyMatrix", "svg" ) );
+                                          (fs::path(sMatchesDirectory) / "GeometricAdjacencyMatrix.svg").string() );
 
     const Pair_Set outputPairs = getPairs( map_GeometricMatches );
 
@@ -397,7 +399,7 @@ int main( int argc, char** argv )
       std::transform( sfm_data.GetViews().begin(), sfm_data.GetViews().end(), std::inserter( set_ViewIds, set_ViewIds.begin() ), stl::RetrieveKey() );
       graph::indexedGraph putativeGraph( set_ViewIds, outputPairs );
       graph::exportToGraphvizData(
-          stlplus::create_filespec( sMatchesDirectory, "geometric_matches" ),
+          (fs::path(sMatchesDirectory) / "geometric_matches").string(),
           putativeGraph );
     }
 
