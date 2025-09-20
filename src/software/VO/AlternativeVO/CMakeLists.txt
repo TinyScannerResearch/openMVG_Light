@@ -23,12 +23,6 @@ if ( OpenMVG_BUILD_GUI_SOFTWARES )
 
     target_link_libraries( openMVG_main_AlternativeVO Qt5::Widgets openMVG_image openMVG_features ${STLPLUS_LIBRARY} )
 
-    if ( OpenMVG_USE_OPENCV )
-      target_link_libraries( openMVG_main_AlternativeVO ${OpenCV_LIBS} )
-      target_include_directories( openMVG_main_AlternativeVO PRIVATE ${OpenCV_INCLUDE_DIRS} )
-      target_compile_definitions( openMVG_main_AlternativeVO PRIVATE HAVE_OPENCV )
-    endif( OpenMVG_USE_OPENCV )
-
     set_property( TARGET openMVG_main_AlternativeVO PROPERTY CXX_STANDARD 11 )
     set_property(TARGET openMVG_main_AlternativeVO PROPERTY FOLDER OpenMVG/software)
     install(TARGETS openMVG_main_AlternativeVO DESTINATION bin/)

@@ -39,11 +39,6 @@ option(OpenMVG_BUILD_SOFTWARES "Build OpenMVG softwares" ON)
 option(OpenMVG_BUILD_GUI_SOFTWARES "Build OpenMVG GUI softwares (QT5)" ON)
 option(OpenMVG_BUILD_COVERAGE "Enable code coverage generation (gcc only)" OFF)
 option(OpenMVG_USE_OPENMP "Enable OpenMP parallelization" ON)
-# ==============================================================================
-# Opencv is not used by openMVG but some samples show how to use openCV
-#  and openMVG simultaneously
-# ==============================================================================
-option(OpenMVG_USE_OPENCV "Build or not opencv+openMVG samples programs" OFF)
 
 # ==============================================================================
 # Since OpenCV 3, SIFT is no longer in the default modules. See
@@ -382,20 +377,6 @@ else()
   list(APPEND CUSTOM_CMAKE_MODULES "${CMAKE_MODULE_PATH}/FindLemon.cmake")
 endif()
 
-# ==============================================================================
-# OpenCV
-# ==============================================================================
-# - only external and enabled only if OpenMVG_USE_OPENCV is set to ON
-# ==============================================================================
-if (OpenMVG_USE_OPENCV)
-  find_package( OpenCV QUIET )
-  if (NOT OpenCV_FOUND OR OpenCV_VERSION VERSION_LESS "3.0.0")
-    message(STATUS "OpenCV was not found (note that OpenCV version >= 3.0.0 is required). -> Disabling OpenCV support.")
-    UPDATE_CACHE_VARIABLE(OpenMVG_USE_OPENCV OFF)
-    UPDATE_CACHE_VARIABLE(OpenMVG_USE_OCVSIFT OFF)
-  endif()
-endif()
-
 
 # ==============================================================================
 # LiGT
@@ -486,7 +467,6 @@ message("** Build OpenMVG GUI softwares: " ${OpenMVG_BUILD_GUI_SOFTWARES})
 message("** Build OpenMVG documentation: " ${OpenMVG_BUILD_DOC})
 message("** Enable code coverage generation: " ${OpenMVG_BUILD_COVERAGE})
 message("** Enable OpenMP parallelization: " ${OpenMVG_USE_OPENMP})
-message("** Build OpenCV+OpenMVG samples programs: " ${OpenMVG_USE_OPENCV})
 message("** Use OpenCV SIFT features: " ${OpenMVG_USE_OCVSIFT})
 message("** Use LiGT for global translation estimation: " ${OpenMVG_USE_LIGT})
 
