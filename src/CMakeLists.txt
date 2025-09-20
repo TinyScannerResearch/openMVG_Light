@@ -35,7 +35,6 @@ set(CMAKE_FIND_FRAMEWORK LAST)
 option(OpenMVG_BUILD_SHARED "Build OpenMVG shared libs" OFF)
 option(OpenMVG_BUILD_TESTS "Build OpenMVG tests" OFF)
 option(OpenMVG_BUILD_DOC "Build OpenMVG documentation" ON)
-option(OpenMVG_BUILD_EXAMPLES "Build OpenMVG samples applications." ON)
 option(OpenMVG_BUILD_SOFTWARES "Build OpenMVG softwares" ON)
 option(OpenMVG_BUILD_GUI_SOFTWARES "Build OpenMVG GUI softwares (QT5)" ON)
 option(OpenMVG_BUILD_COVERAGE "Enable code coverage generation (gcc only)" OFF)
@@ -420,11 +419,6 @@ add_subdirectory(testing)
 # The openMVG library itself
 add_subdirectory(openMVG)
 
-# openMVG tutorial examples
-if (OpenMVG_BUILD_EXAMPLES)
-  add_subdirectory(openMVG_Samples)
-endif (OpenMVG_BUILD_EXAMPLES)
-
 # Complete software(s) build on openMVG libraries
 if (OpenMVG_BUILD_SOFTWARES)
   add_subdirectory(software)
@@ -490,7 +484,6 @@ message("** Build OpenMVG tests: " ${OpenMVG_BUILD_TESTS})
 message("** Build OpenMVG softwares: " ${OpenMVG_BUILD_SOFTWARES})
 message("** Build OpenMVG GUI softwares: " ${OpenMVG_BUILD_GUI_SOFTWARES})
 message("** Build OpenMVG documentation: " ${OpenMVG_BUILD_DOC})
-message("** Build OpenMVG samples applications: " ${OpenMVG_BUILD_EXAMPLES})
 message("** Enable code coverage generation: " ${OpenMVG_BUILD_COVERAGE})
 message("** Enable OpenMP parallelization: " ${OpenMVG_USE_OPENMP})
 message("** Build OpenCV+OpenMVG samples programs: " ${OpenMVG_USE_OPENCV})
