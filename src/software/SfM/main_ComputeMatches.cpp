@@ -24,12 +24,14 @@
 #include "openMVG/system/timer.hpp"
 
 #include "third_party/cmdLine/cmdLine.h"
-#include "third_party/stlplus3/filesystemSimplified/file_system.hpp"
 
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
+
+namespace fs = std::filesystem;
 
 using namespace openMVG;
 using namespace openMVG::matching;
@@ -147,14 +149,14 @@ int main( int argc, char** argv )
     OPENMVG_LOG_ERROR << "The input SfM_Data file \""<< sSfM_Data_Filename << "\" cannot be read.";
     return EXIT_FAILURE;
   }
-  const std::string sMatchesDirectory = stlplus::folder_part( sOutputMatchesFilename );
+  const std::string sMatchesDirectory = fs::path(sOutputMatchesFilename).parent_path().string();
 
   //---------------------------------------
   // Load SfM Scene regions
   //---------------------------------------
   // Init the regions_type from the image describer file (used for image regions extraction)
   using namespace openMVG::features;
-  const std::string sImage_describer = stlplus::create_filespec(sMatchesDirectory, "image_describer", "json");
+  const std::string sImage_describer = (fs::path(sMatchesDirectory) / "image_describer.json").string();
   std::unique_ptr<Regions> regions_type = Init_region_type_from_file(sImage_describer);
   if (!regions_type)
   {
@@ -206,15 +208,14 @@ int main( int argc, char** argv )
     for (const auto view_it : sfm_data.GetViews())
     {
       const View * v = view_it.second.get();
-      vec_fileNames.emplace_back(stlplus::create_filespec(sfm_data.s_root_path,
-          v->s_Img_path));
+      vec_fileNames.emplace_back((fs::path(sfm_data.s_root_path) / v->s_Img_path).string());
       vec_imagesSize.emplace_back(v->ui_width, v->ui_height);
     }
   }
 
   OPENMVG_LOG_INFO << " - PUTATIVE MATCHES - ";
   // If the matches already exists, reload them
-  if ( !bForce && ( stlplus::file_exists( sOutputMatchesFilename ) ) )
+  if ( !bForce && ( fs::exists(sOutputMatchesFilename) && fs::is_regular_file(sOutputMatchesFilename) ) )
   {
     if ( !( Load( map_PutativeMatches, sOutputMatchesFilename ) ) )
     {
@@ -340,8 +341,7 @@ int main( int argc, char** argv )
         return EXIT_FAILURE;
       }
       // Save pairs
-      const std::string sOutputPairFilename =
-        stlplus::create_filespec( sMatchesDirectory, "preemptive_pairs", "txt" );
+      const std::string sOutputPairFilename = (fs::path(sMatchesDirectory) / "preemptive_pairs.txt").string();
       if (!savePairs(
         sOutputPairFilename,
         getPairs(map_PutativeMatches)))
@@ -363,14 +363,14 @@ int main( int argc, char** argv )
   //-- export putative matches Adjacency matrix
   PairWiseMatchingToAdjacencyMatrixSVG( vec_fileNames.size(),
                                         map_PutativeMatches,
-                                        stlplus::create_filespec( sMatchesDirectory, "PutativeAdjacencyMatrix", "svg" ) );
+                                        (fs::path(sMatchesDirectory) / "PutativeAdjacencyMatrix.svg").string() );
   //-- export view pair graph once putative graph matches has been computed
   {
     std::set<IndexT> set_ViewIds;
     std::transform( sfm_data.GetViews().begin(), sfm_data.GetViews().end(), std::inserter( set_ViewIds, set_ViewIds.begin() ), stl::RetrieveKey() );
     graph::indexedGraph putativeGraph( set_ViewIds, getPairs( map_PutativeMatches ) );
     graph::exportToGraphvizData(
-        stlplus::create_filespec( sMatchesDirectory, "putative_matches" ),
+        (fs::path(sMatchesDirectory) / "putative_matches").string(),
         putativeGraph );
   }
 
