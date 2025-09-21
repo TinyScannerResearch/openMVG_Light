@@ -227,12 +227,6 @@ $ ./build/Linux-x86_64-Release/openMVG_main_SfMInit_ImageListing
 ```
 
 
-Using OpenCV sample
---------------------
-
-Add `-DOpenMVG_USE_OPENCV=ON` to your cmake command and set the OpenCV_DIR variable to your OpenCV build directory
-e.g. `-DOpenCV_DIR="/home/user/Dev/github/itseez/opencv_Build" -DOpenMVG_USE_OPENCV=ON`
-
 Using OpenMVG as a third party library dependency with CMake
 -------------------------------------------------------------
 

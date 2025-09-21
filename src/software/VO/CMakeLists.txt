@@ -1,6 +1,3 @@
-
-add_subdirectory( AlternativeVO )
-
 # - VO (WIP)
 #
 add_executable(openMVG_main_VO main_VO.cpp Monocular_VO.hpp CGlWindow.hpp)
