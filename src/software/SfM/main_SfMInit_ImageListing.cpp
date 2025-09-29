@@ -21,12 +21,14 @@
 #include "openMVG/types.hpp"
 
 #include "third_party/cmdLine/cmdLine.h"
-#include "third_party/stlplus3/filesystemSimplified/file_system.hpp"
 
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <string>
 #include <utility>
+
+namespace fs = std::filesystem;
 
 using namespace openMVG;
 using namespace openMVG::cameras;
@@ -186,7 +188,7 @@ int main(int argc, char **argv)
   // Expected properties for each image
   double width = -1, height = -1, focal = -1, ppx = -1,  ppy = -1;
 
-  if ( !stlplus::folder_exists( sImageDir ) )
+  if ( !(fs::exists(sImageDir) && fs::is_directory(sImageDir)) )
   {
     OPENMVG_LOG_ERROR << "The input directory doesn't exist";
     return EXIT_FAILURE;
@@ -198,9 +200,9 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
-  if ( !stlplus::folder_exists( sOutputDir ) )
+  if ( !(fs::exists(sOutputDir) && fs::is_directory(sOutputDir)) )
   {
-    if ( !stlplus::folder_create( sOutputDir ))
+    if ( !fs::create_directory(sOutputDir))
     {
       OPENMVG_LOG_ERROR << "Cannot create output directory";
       return EXIT_FAILURE;
@@ -225,7 +227,12 @@ int main(int argc, char **argv)
     prior_w_info = checkPriorWeightsString(sPriorWeights);
   }
 
-  std::vector<std::string> vec_image = stlplus::folder_files( sImageDir );
+  std::vector<std::string> vec_image;
+  for (const auto& entry : fs::directory_iterator(sImageDir)) {
+    if (entry.is_regular_file()) {
+        vec_image.push_back(entry.path().filename().string());
+    }
+  }
   std::sort(vec_image.begin(), vec_image.end());
 
   // Configure an empty scene with Views and their corresponding cameras
@@ -243,8 +250,8 @@ int main(int argc, char **argv)
     // Read meta data to fill camera parameter (w,h,focal,ppx,ppy) fields.
     width = height = ppx = ppy = focal = -1.0;
 
-    const std::string sImageFilename = stlplus::create_filespec( sImageDir, *iter_image );
-    const std::string sImFilenamePart = stlplus::filename_part(sImageFilename);
+    const std::string sImageFilename = (fs::path(sImageDir) / *iter_image).string();
+    const std::string sImFilenamePart = fs::path(sImageFilename).filename().string();
 
     // Test if the image format is supported:
     if (openMVG::image::GetFormat(sImageFilename.c_str()) == openMVG::image::Unknown)
@@ -368,7 +375,7 @@ int main(int argc, char **argv)
   // Store SfM_Data views & intrinsic data
   if (!Save(
     sfm_data,
-    stlplus::create_filespec( sOutputDir, "sfm_data.json" ).c_str(),
+    (fs::path(sOutputDir) / "sfm_data.json").string().c_str(),
     ESfM_Data(VIEWS|INTRINSICS)))
   {
     return EXIT_FAILURE;
