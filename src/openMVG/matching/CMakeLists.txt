@@ -55,5 +55,3 @@ if (USE_AVX)
 endif (USE_AVX)
 
 install(TARGETS openMVG_matching DESTINATION ${CMAKE_INSTALL_LIBDIR} EXPORT openMVG-targets)
-
-add_subdirectory(kvld)
