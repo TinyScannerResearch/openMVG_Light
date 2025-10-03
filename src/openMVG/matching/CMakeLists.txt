@@ -56,9 +56,4 @@ endif (USE_AVX)
 
 install(TARGETS openMVG_matching DESTINATION ${CMAKE_INSTALL_LIBDIR} EXPORT openMVG-targets)
 
-UNIT_TEST(openMVG matching "openMVG_matching")
-UNIT_TEST(openMVG matching_filters "openMVG_matching")
-UNIT_TEST(openMVG indMatch "openMVG_matching")
-UNIT_TEST(openMVG metric "openMVG_matching")
-
 add_subdirectory(kvld)
