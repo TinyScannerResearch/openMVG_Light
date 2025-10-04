@@ -6,7 +6,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "openMVG/graph/graph.hpp"
 #include "openMVG/matching/indMatch.hpp"
 #include "openMVG/matching/indMatch_utils.hpp"
 #include "openMVG/matching_image_collection/Cascade_Hashing_Matcher_Regions.hpp"
@@ -16,7 +15,6 @@
 #include "openMVG/sfm/pipelines/sfm_regions_provider.hpp"
 #include "openMVG/sfm/sfm_data.hpp"
 #include "openMVG/sfm/sfm_data_io.hpp"
-#include "openMVG/stl/stl.hpp"
 
 #include "third_party/cmdLine/cmdLine.h"
 
@@ -83,11 +81,6 @@ int main( int argc, char** argv )
     OPENMVG_LOG_ERROR << "No output file set.";
     return EXIT_FAILURE;
   }
-
-  // -----------------------------
-  // . Load SfM_Data Views & intrinsics data
-  // . Compute putative descriptor matches
-  // -----------------------------
 
   //---------------------------------------
   // Read SfM Scene (image view & intrinsics data)
