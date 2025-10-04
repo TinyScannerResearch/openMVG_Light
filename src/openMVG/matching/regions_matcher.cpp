@@ -7,8 +7,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "openMVG/matching/regions_matcher.hpp"
-#include "openMVG/matching/matcher_brute_force.hpp"
-#include "openMVG/matching/matcher_cascade_hashing.hpp"
 #include "openMVG/matching/matcher_hnsw.hpp"
 #include "openMVG/matching/metric.hpp"
 #include "openMVG/matching/metric_hamming.hpp"
@@ -56,116 +54,13 @@ std::unique_ptr<RegionsMatcher> RegionMatcherFactory
   const features::Regions & regions
 )
 {
-  // Handle invalid request
-  if (regions.IsScalar() && (eMatcherType == BRUTE_FORCE_HAMMING && eMatcherType == HNSW_HAMMING) )
-    return {};
-  if (regions.IsBinary() && (eMatcherType != BRUTE_FORCE_HAMMING && eMatcherType != HNSW_HAMMING) )
-    return {};
 
   std::unique_ptr<RegionsMatcher> region_matcher;
   // Switch regions type ID, matcher & Metric: initialize the Matcher interface
-  if (regions.IsScalar())
-  {
-    if (regions.Type_id() == typeid(unsigned char).name())
-    {
-      // Build on the fly unsigned char based Matcher
-      switch (eMatcherType)
-      {
-        case BRUTE_FORCE_L2:
-        {
-          using MetricT = L2<unsigned char>;
-          using MatcherT = ArrayMatcherBruteForce<unsigned char, MetricT>;
-          region_matcher.reset(new matching::RegionsMatcherT<MatcherT>(regions, true));
-        }
-        break;
-        case HNSW_L2: 
-        {
-          using MetricT = L2<unsigned char>;
-          using MatcherT = HNSWMatcher<unsigned char, MetricT, HNSWMETRIC::L2_HNSW>;
-          region_matcher.reset(new matching::RegionsMatcherT<MatcherT>(regions, true));
-        }
-        break;
-        case HNSW_L1: 
-        {
-          using MetricT = L1<unsigned char>;
-          using MatcherT = HNSWMatcher<unsigned char, MetricT, HNSWMETRIC::L1_HNSW>;
-          region_matcher.reset(new matching::RegionsMatcherT<MatcherT>(regions, false));
-        }
-        break;
-        case CASCADE_HASHING_L2:
-        {
-          using MetricT = L2<unsigned char>;
-          using MatcherT = ArrayMatcherCascadeHashing<unsigned char, MetricT>;
-          region_matcher.reset(new matching::RegionsMatcherT<MatcherT>(regions, true));
-        }
-        break;
-        default:
-          OPENMVG_LOG_ERROR << "Using unknown matcher type";
-      }
-    }
-    else if (regions.Type_id() == typeid(float).name())
-    {
-      // Build on the fly float based Matcher
-      switch (eMatcherType)
-      {
-        case BRUTE_FORCE_L2:
-        {
-          using MetricT = L2<float>;
-          using MatcherT = ArrayMatcherBruteForce<float, MetricT>;
-          region_matcher.reset(new matching::RegionsMatcherT<MatcherT>(regions, true));
-        }
-        break;
-        case HNSW_L2: 
-        {
-          using MetricT = L2<float>;
-          using MatcherT = HNSWMatcher<float, MetricT, HNSWMETRIC::L2_HNSW>;
-          region_matcher.reset(new matching::RegionsMatcherT<MatcherT>(regions, true));
-        }
-        break;
-        case CASCADE_HASHING_L2:
-        {
-          using MetricT = L2<float>;
-          using MatcherT = ArrayMatcherCascadeHashing<float, MetricT>;
-          region_matcher.reset(new matching::RegionsMatcherT<MatcherT>(regions, true));
-        }
-        break;
-        default:
-          OPENMVG_LOG_ERROR << "Using unknown matcher type";
-      }
-    }
-    else if (regions.Type_id() == typeid(double).name())
-    {
-      // Build on the fly double based Matcher
-      switch (eMatcherType)
-      {
-        case BRUTE_FORCE_L2:
-        {
-          using MetricT = L2<double>;
-          using MatcherT = ArrayMatcherBruteForce<double, MetricT>;
-          region_matcher.reset(new matching::RegionsMatcherT<MatcherT>(regions, true));
-        }
-        break;
-        case CASCADE_HASHING_L2:
-        {
-          OPENMVG_LOG_ERROR << "CASCADE_HASHING_L2 matcher for double regions is not implemented";
-        }
-        break;
-        default:
-          OPENMVG_LOG_ERROR << "Using unknown matcher type";
-      }
-    }
-  }
-  else if (regions.IsBinary() && regions.Type_id() == typeid(unsigned char).name())
+  if (regions.IsBinary() && regions.Type_id() == typeid(unsigned char).name())
   {
     switch (eMatcherType)
     {
-      case BRUTE_FORCE_HAMMING:
-      {
-        using MetricT = Hamming<unsigned char>;
-        using MatcherT = ArrayMatcherBruteForce<unsigned char, MetricT>;
-        region_matcher.reset(new matching::RegionsMatcherT<MatcherT>(regions, false));
-      }
-      break;
       case HNSW_HAMMING:
       {
         using MetricT = Hamming<unsigned char>;

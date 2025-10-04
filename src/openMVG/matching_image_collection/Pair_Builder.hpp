@@ -21,17 +21,6 @@
 
 namespace openMVG {
 
-/// Generate all the (I,J) pairs of the upper diagonal of the NxN matrix
-inline Pair_Set exhaustivePairs(const size_t N)
-{
-  Pair_Set pairs;
-  for (IndexT I = 0; I < static_cast<IndexT>(N); ++I)
-    for (IndexT J = I+1; J < static_cast<IndexT>(N); ++J)
-      pairs.insert({I,J});
-
-  return pairs;
-}
-
 /// Generate the pairs that have a distance inferior to the overlapSize
 /// Usable to match video sequence
 inline Pair_Set contiguousWithOverlap(const size_t N, const size_t overlapSize)
