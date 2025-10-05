@@ -19,9 +19,6 @@
 #include "openMVG/types.hpp"
 
 // SfM Engines
-#include "openMVG/sfm/pipelines/global/GlobalSfM_rotation_averaging.hpp"
-#include "openMVG/sfm/pipelines/global/GlobalSfM_translation_averaging.hpp"
-#include "openMVG/sfm/pipelines/global/sfm_global_engine_relative_motions.hpp"
 #include "openMVG/sfm/pipelines/sequential/sequential_SfM.hpp"
 #include "openMVG/sfm/pipelines/sequential/sequential_SfM2.hpp"
 #include "openMVG/sfm/pipelines/sequential/SfmSceneInitializerMaxPair.hpp"
@@ -55,7 +52,6 @@ enum class ESfMEngine
 {
   INCREMENTAL,
   INCREMENTALV2,
-  GLOBAL,
   STELLAR
 };
 
@@ -69,7 +65,6 @@ bool StringToEnum
   {
     {"INCREMENTAL", ESfMEngine::INCREMENTAL},
     {"INCREMENTALV2", ESfMEngine::INCREMENTALV2},
-    {"GLOBAL", ESfMEngine::GLOBAL},
     {"STELLAR", ESfMEngine::STELLAR},
   };
   const auto it  = string_to_enum_mapping.find(str);
@@ -186,11 +181,6 @@ int main(int argc, char **argv)
   // SfM v2
   std::string sfm_initializer_method = "STELLAR";
 
-  // Global SfM
-  int rotation_averaging_method = int (ROTATION_AVERAGING_L2);
-  int translation_averaging_method = int (TRANSLATION_AVERAGING_SOFTL1);
-
-
   // Common options
   cmd.add( make_option('i', filename_sfm_data, "input_file") );
   cmd.add( make_option('m', directory_match, "match_dir") );
@@ -212,9 +202,6 @@ int main(int argc, char **argv)
   // Incremental SfM1
   cmd.add( make_option('a', initial_pair_string.first, "initial_pair_a") );
   cmd.add( make_option('b', initial_pair_string.second, "initial_pair_b") );
-  // Global SfM
-  cmd.add( make_option('R', rotation_averaging_method, "rotationAveraging") );
-  cmd.add( make_option('T', translation_averaging_method, "translationAveraging") );
   // Stellar SfM
   std::string graph_simplification = "MST_X";
   int graph_simplification_value = 5;
@@ -234,7 +221,6 @@ int main(int argc, char **argv)
       << "[-s|--sfm_engine] Type of SfM Engine to use for the reconstruction\n"
       << "\t INCREMENTAL   : add image sequentially to a 2 view seed\n"
       << "\t INCREMENTALV2 : add image sequentially to a 2 or N view seed (experimental)\n"
-      << "\t GLOBAL        : initialize globally rotation and translations\n"
       << "\t STELLAR       : n-uplets local motion refinements + global SfM\n"
       << "\n\n"
       << "[Optional parameters]\n"
@@ -308,15 +294,6 @@ int main(int argc, char **argv)
       << "\t\t" << static_cast<int>(resection::SolverType::P3P_DING_CVPR23) << ": P3P_DING_CVPR23\n"
       << "\t\t" << static_cast<int>(resection::SolverType::UP2P_KUKELOVA_ACCV10)  << ": UP2P_KUKELOVA_ACCV10 | 2Points | upright camera\n"
       << "\n\n"
-      << "[GLOBAL]\n"
-      << "\t[-R|--rotationAveraging]\n"
-      << "\t\t 1 -> L1 minimization\n"
-      << "\t\t 2 -> L2 minimization (default)\n"
-      << "\t[-T|--translationAveraging]:\n"
-      << "\t\t 1 -> L1 minimization\n"
-      << "\t\t 2 -> L2 minimization of sum of squared Chordal distances\n"
-      << "\t\t 3 -> SoftL1 minimization (default)\n"
-      << "\t\t 4 -> LiGT: Linear Global Translation constraints from rotation and matches\n"
       << "[STELLAR]\n"
       << "\t[-G|--graph_simplification]\n"
       << "\t\t -> NONE\n"
@@ -370,24 +347,6 @@ int main(int argc, char **argv)
   if (!StringToEnum(engine_name, sfm_engine_type))
   {
     OPENMVG_LOG_ERROR << "Invalid input for the SfM Engine type";
-    return EXIT_FAILURE;
-  }
-
-  if (rotation_averaging_method < ROTATION_AVERAGING_L1 ||
-      rotation_averaging_method > ROTATION_AVERAGING_L2 )  {
-    OPENMVG_LOG_ERROR << "Rotation averaging method is invalid";
-    return EXIT_FAILURE;
-  }
-
-#ifndef USE_PATENTED_LIGT
-  if (translation_averaging_method == TRANSLATION_LIGT) {
-    OPENMVG_LOG_ERROR << "OpenMVG was not compiled with USE_PATENTED_LIGT cmake option";
-    return EXIT_FAILURE;
-  }
-#endif
-  if (translation_averaging_method < TRANSLATION_AVERAGING_L1 ||
-      translation_averaging_method > TRANSLATION_LIGT )  {
-    OPENMVG_LOG_ERROR << "Translation averaging method is invalid";
     return EXIT_FAILURE;
   }
 
@@ -560,25 +519,6 @@ int main(int argc, char **argv)
     sfm_engine.reset(engine);
   }
     break;
-  case ESfMEngine::GLOBAL:
-  {
-    GlobalSfMReconstructionEngine_RelativeMotions * engine =
-        new GlobalSfMReconstructionEngine_RelativeMotions(
-          sfm_data,
-          directory_output,
-          (fs::path(directory_output) / "Reconstruction_Report.html").string());
-
-    // Configuration:
-    engine->SetFeaturesProvider(feats_provider.get());
-    engine->SetMatchesProvider(matches_provider.get());
-
-    // Configure motion averaging method
-    engine->SetRotationAveragingMethod(ERotationAveragingMethod(rotation_averaging_method));
-    engine->SetTranslationAveragingMethod(ETranslationAveragingMethod(translation_averaging_method));
-
-    sfm_engine.reset(engine);
-  }
-  break;
   case ESfMEngine::STELLAR:
   {
     StellarSfMReconstructionEngine * engine =
