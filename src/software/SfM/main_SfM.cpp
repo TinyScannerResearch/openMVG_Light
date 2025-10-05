@@ -161,7 +161,6 @@ int main(int argc, char **argv)
   std::string
       filename_sfm_data,
       directory_match,
-      filename_match,
       directory_output,
       engine_name = "INCREMENTAL";
 
@@ -172,7 +171,6 @@ int main(int argc, char **argv)
 
   // Incremental SfM options
   int triangulation_method = static_cast<int>(ETriangulationMethod::DEFAULT);
-  int resection_method  = static_cast<int>(resection::SolverType::DEFAULT);
   int user_camera_model = PINHOLE_CAMERA_RADIAL3;
 
   // SfM v1
@@ -184,7 +182,6 @@ int main(int argc, char **argv)
   // Common options
   cmd.add( make_option('i', filename_sfm_data, "input_file") );
   cmd.add( make_option('m', directory_match, "match_dir") );
-  cmd.add( make_option('M', filename_match, "match_file") );
   cmd.add( make_option('o', directory_output, "output_dir") );
   cmd.add( make_option('s', engine_name, "sfm_engine") );
 
@@ -195,7 +192,6 @@ int main(int argc, char **argv)
 
   // Incremental SfM pipeline options
   cmd.add( make_option('t', triangulation_method, "triangulation_method"));
-  cmd.add( make_option('r', resection_method, "resection_method"));
   cmd.add( make_option('c', user_camera_model, "camera_model") );
   // Incremental SfM2
   cmd.add( make_option('S', sfm_initializer_method, "sfm_initializer") );
@@ -226,7 +222,6 @@ int main(int argc, char **argv)
       << "[Optional parameters]\n"
       << "\n\n"
       << "[Common]\n"
-      << "[-M|--match_file] path to the match file to use (i.e matches.f.txt or matches.f.bin)\n"
       << "[-f|--refine_intrinsic_config] Intrinsic parameters refinement option\n"
       << "\t ADJUST_ALL -> refine all existing parameters (default) \n"
       << "\t NONE -> intrinsic parameters are held as constant\n"
@@ -261,13 +256,6 @@ int main(int argc, char **argv)
       << "\t\t" << static_cast<int>(ETriangulationMethod::L1_ANGULAR) << ": L1_ANGULAR\n"
       << "\t\t" << static_cast<int>(ETriangulationMethod::LINFINITY_ANGULAR) << ": LINFINITY_ANGULAR\n"
       << "\t\t" << static_cast<int>(ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT) << ": INVERSE_DEPTH_WEIGHTED_MIDPOINT\n"
-      << "\t[--resection_method] resection/pose estimation method (default=" << resection_method << "):\n"
-      << "\t\t" << static_cast<int>(resection::SolverType::DLT_6POINTS) << ": DIRECT_LINEAR_TRANSFORM 6Points | does not use intrinsic data\n"
-      << "\t\t" << static_cast<int>(resection::SolverType::P3P_KE_CVPR17) << ": P3P_KE_CVPR17\n"
-      << "\t\t" << static_cast<int>(resection::SolverType::P3P_KNEIP_CVPR11) << ": P3P_KNEIP_CVPR11\n"
-      << "\t\t" << static_cast<int>(resection::SolverType::P3P_NORDBERG_ECCV18) << ": P3P_NORDBERG_ECCV18\n"
-      << "\t\t" << static_cast<int>(resection::SolverType::P3P_DING_CVPR23) << ": P3P_DING_CVPR23\n"
-      << "\t\t" << static_cast<int>(resection::SolverType::UP2P_KUKELOVA_ACCV10)  << ": UP2P_KUKELOVA_ACCV10 | 2Points | upright camera\n"
       << "\n\n"
       << "[INCREMENTALV2]\n"
       << "\t[-S|--sfm_initializer] Choose the SfM initializer method:\n"
@@ -286,13 +274,6 @@ int main(int argc, char **argv)
       << "\t\t" << static_cast<int>(ETriangulationMethod::L1_ANGULAR) << ": L1_ANGULAR\n"
       << "\t\t" << static_cast<int>(ETriangulationMethod::LINFINITY_ANGULAR) << ": LINFINITY_ANGULAR\n"
       << "\t\t" << static_cast<int>(ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT) << ": INVERSE_DEPTH_WEIGHTED_MIDPOINT\n"
-      << "\t[--resection_method] resection/pose estimation method (default=" << resection_method << "):\n"
-      << "\t\t" << static_cast<int>(resection::SolverType::DLT_6POINTS) << ": DIRECT_LINEAR_TRANSFORM 6Points | does not use intrinsic data\n"
-      << "\t\t" << static_cast<int>(resection::SolverType::P3P_KE_CVPR17) << ": P3P_KE_CVPR17\n"
-      << "\t\t" << static_cast<int>(resection::SolverType::P3P_KNEIP_CVPR11) << ": P3P_KNEIP_CVPR11\n"
-      << "\t\t" << static_cast<int>(resection::SolverType::P3P_NORDBERG_ECCV18) << ": P3P_NORDBERG_ECCV18\n"
-      << "\t\t" << static_cast<int>(resection::SolverType::P3P_DING_CVPR23) << ": P3P_DING_CVPR23\n"
-      << "\t\t" << static_cast<int>(resection::SolverType::UP2P_KUKELOVA_ACCV10)  << ": UP2P_KUKELOVA_ACCV10 | 2Points | upright camera\n"
       << "\n\n"
       << "[STELLAR]\n"
       << "\t[-G|--graph_simplification]\n"
@@ -388,16 +369,6 @@ int main(int argc, char **argv)
     }
   }
 
-  //
-  // Match and features
-  //
-  if (directory_match.empty() && !filename_match.empty() && fs::exists(filename_match) && fs::is_regular_file(filename_match)
-)
-  {
-    directory_match = fs::path(filename_match).parent_path().string();
-    filename_match  = fs::path(filename_match).filename().string();
-  }
-
   // Init the regions_type from the image describer file (used for image regions extraction)
   using namespace openMVG::features;
   const std::string sImage_describer = (fs::path(directory_match) / "image_describer.json").string();
@@ -418,8 +389,7 @@ int main(int argc, char **argv)
   std::shared_ptr<Matches_Provider> matches_provider = std::make_shared<Matches_Provider>();
   if // Try to read the provided match filename or the default one (matches.f.txt/bin)
   (
-  !(matches_provider->load(sfm_data, (fs::path(directory_match) / filename_match).string()) ||
-      matches_provider->load(sfm_data, (fs::path(directory_match) / "matches.f.txt").string()) ||
+  !(matches_provider->load(sfm_data, (fs::path(directory_match) / "matches.f.txt").string()) ||
       matches_provider->load(sfm_data, (fs::path(directory_match) / "matches.f.bin").string()) ||
       matches_provider->load(sfm_data, (fs::path(directory_match) / "matches.e.txt").string()) ||
       matches_provider->load(sfm_data, (fs::path(directory_match) / "matches.e.bin").string()))
@@ -480,7 +450,7 @@ int main(int argc, char **argv)
     // Configure reconstruction parameters
     engine->SetUnknownCameraType(EINTRINSIC(user_camera_model));
     engine->SetTriangulationMethod(static_cast<ETriangulationMethod>(triangulation_method));
-    engine->SetResectionMethod(static_cast<resection::SolverType>(resection_method));
+    engine->SetResectionMethod(static_cast<resection::SolverType>(resection::SolverType::DEFAULT));
 
     // Handle Initial pair parameter
     if (!initial_pair_string.first.empty() && !initial_pair_string.second.empty())
@@ -514,7 +484,7 @@ int main(int argc, char **argv)
     // Configure reconstruction parameters
     engine->SetTriangulationMethod(static_cast<ETriangulationMethod>(triangulation_method));
     engine->SetUnknownCameraType(EINTRINSIC(user_camera_model));
-    engine->SetResectionMethod(static_cast<resection::SolverType>(resection_method));
+    engine->SetResectionMethod(static_cast<resection::SolverType>(resection::SolverType::DEFAULT));
 
     sfm_engine.reset(engine);
   }
