@@ -59,7 +59,7 @@ pMatches = subprocess.Popen( [os.path.join(OPENMVG_SFM_BIN, "openMVG_main_Comput
 pMatches.wait()
 
 print ("5. Filter matches" )
-pFiltering = subprocess.Popen( [os.path.join(OPENMVG_SFM_BIN, "openMVG_main_GeometricFilter"), "-i", matches_dir+"/sfm_data.json", "-m", matches_dir+"/matches.putative.bin" , "-g" , "f" , "-o" , matches_dir+"/matches.f.bin" ] )
+pFiltering = subprocess.Popen( [os.path.join(OPENMVG_SFM_BIN, "openMVG_main_GeometricFilter"), "-i", matches_dir+"/sfm_data.json", "-m", matches_dir+"/matches.putative.bin" , "-o" , matches_dir+"/matches.f.bin" ] )
 pFiltering.wait()
 
 # Create the reconstruction if not present
