@@ -53,8 +53,8 @@ int main( int argc, char** argv )
   // The output matches
   std::string sFilteredMatchesFilename;
 
-  bool         bGuided_matching  = false;
-  int          imax_iteration    = 2048;
+  bool bGuided_matching  = false;
+  int  imax_iteration    = 2048;
 
   //required
   cmd.add( make_option( 'i', sSfM_Data_Filename, "input_file" ) );
