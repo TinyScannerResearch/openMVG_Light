@@ -170,9 +170,6 @@ int main(int argc, char **argv)
   int triangulation_method = static_cast<int>(ETriangulationMethod::DEFAULT);
   int user_camera_model = PINHOLE_CAMERA_RADIAL3;
 
-  // SfM v1
-  std::pair<std::string,std::string> initial_pair_string("","");
-
   // SfM v2
   std::string sfm_initializer_method = "STELLAR";
 
@@ -189,9 +186,6 @@ int main(int argc, char **argv)
   cmd.add( make_option('c', user_camera_model, "camera_model") );
   // Incremental SfM2
   cmd.add( make_option('S', sfm_initializer_method, "sfm_initializer") );
-  // Incremental SfM1
-  cmd.add( make_option('a', initial_pair_string.first, "initial_pair_a") );
-  cmd.add( make_option('b', initial_pair_string.second, "initial_pair_b") );
   // Stellar SfM
   std::string graph_simplification = "MST_X";
   int graph_simplification_value = 5;
@@ -230,8 +224,6 @@ int main(int argc, char **argv)
       << "[Engine specifics]\n"
       << "\n\n"
       << "[INCREMENTAL]\n"
-      << "\t[-a|--initial_pair_a] filename of the first image (without path)\n"
-      << "\t[-b|--initial_pair_b] filename of the second image (without path)\n"
       << "\t[-c|--camera_model] Camera model type for view with unknown intrinsic:\n"
       << "\t\t 1: Pinhole \n"
       << "\t\t 2: Pinhole radial 1\n"
@@ -425,19 +417,6 @@ int main(int argc, char **argv)
     engine->SetUnknownCameraType(EINTRINSIC(user_camera_model));
     engine->SetTriangulationMethod(static_cast<ETriangulationMethod>(triangulation_method));
     engine->SetResectionMethod(static_cast<resection::SolverType>(resection::SolverType::DEFAULT));
-
-    // Handle Initial pair parameter
-    if (!initial_pair_string.first.empty() && !initial_pair_string.second.empty())
-    {
-      Pair initial_pair_index;
-      if (!computeIndexFromImageNames(sfm_data, initial_pair_string, initial_pair_index))
-      {
-        OPENMVG_LOG_ERROR << "Could not find the initial pairs <" << initial_pair_string.first
-                  <<  ", " << initial_pair_string.second << ">!";
-        return EXIT_FAILURE;
-      }
-      engine->setInitialPair(initial_pair_index);
-    }
 
     sfm_engine.reset(engine);
   }
