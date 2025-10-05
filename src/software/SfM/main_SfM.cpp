@@ -184,8 +184,6 @@ int main(int argc, char **argv)
   // Incremental SfM pipeline options
   cmd.add( make_option('t', triangulation_method, "triangulation_method"));
   cmd.add( make_option('c', user_camera_model, "camera_model") );
-  // Incremental SfM2
-  cmd.add( make_option('S', sfm_initializer_method, "sfm_initializer") );
   // Stellar SfM
   std::string graph_simplification = "MST_X";
   int graph_simplification_value = 5;
@@ -216,9 +214,6 @@ int main(int argc, char **argv)
       <<    "\t\t-> refine the focal length & the distortion coefficient(s) (if any)\n"
       << "\t ADJUST_PRINCIPAL_POINT|ADJUST_DISTORTION\n"
       <<    "\t\t-> refine the principal point position & the distortion coefficient(s) (if any)\n"
-      << "[-e|--refine_extrinsic_config] Extrinsic parameters refinement option\n"
-      << "\t ADJUST_ALL -> refine all existing parameters (default) \n"
-      << "\t NONE -> extrinsic parameters are held as constant\n"
       << "[-P|--prior_usage] Enable usage of motion priors (i.e GPS positions) (default: false)\n"
       << "\n\n"
       << "[Engine specifics]\n"
@@ -236,12 +231,6 @@ int main(int argc, char **argv)
       << "\t\t" << static_cast<int>(ETriangulationMethod::LINFINITY_ANGULAR) << ": LINFINITY_ANGULAR\n"
       << "\t\t" << static_cast<int>(ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT) << ": INVERSE_DEPTH_WEIGHTED_MIDPOINT\n"
       << "\n\n"
-      << "[INCREMENTALV2]\n"
-      << "\t[-S|--sfm_initializer] Choose the SfM initializer method:\n"
-      << "\t\t 'EXISTING_POSE'-> Initialize the reconstruction from the existing sfm_data camera poses\n"
-      << "\t\t 'MAX_PAIR'-> Initialize the reconstruction from the pair that has the most of matches\n"
-      << "\t\t 'AUTO_PAIR'-> Initialize the reconstruction with a pair selected automatically\n"
-      << "\t\t 'STELLAR'-> Initialize the reconstruction with a 'stellar' reconstruction\n"
       << "\t[-c|--camera_model] Camera model type for view with unknown intrinsic:\n"
       << "\t\t 1: Pinhole \n"
       << "\t\t 2: Pinhole radial 1\n"
