@@ -23,7 +23,6 @@
 #include "openMVG/sfm/pipelines/sequential/sequential_SfM2.hpp"
 #include "openMVG/sfm/pipelines/sequential/SfmSceneInitializerMaxPair.hpp"
 #include "openMVG/sfm/pipelines/sequential/SfmSceneInitializerStellar.hpp"
-#include "openMVG/sfm/pipelines/stellar/sfm_stellar_engine.hpp"
 
 #include "third_party/cmdLine/cmdLine.h"
 
@@ -51,8 +50,7 @@ enum class ESfMSceneInitializer
 enum class ESfMEngine
 {
   INCREMENTAL,
-  INCREMENTALV2,
-  STELLAR
+  INCREMENTALV2
 };
 
 bool StringToEnum
@@ -64,8 +62,7 @@ bool StringToEnum
   const std::map<std::string, ESfMEngine> string_to_enum_mapping =
   {
     {"INCREMENTAL", ESfMEngine::INCREMENTAL},
-    {"INCREMENTALV2", ESfMEngine::INCREMENTALV2},
-    {"STELLAR", ESfMEngine::STELLAR},
+    {"INCREMENTALV2", ESfMEngine::INCREMENTALV2}
   };
   const auto it  = string_to_enum_mapping.find(str);
   if (it == string_to_enum_mapping.end())
@@ -91,25 +88,6 @@ bool StringToEnum
   if (it == string_to_enum_mapping.end())
     return false;
   scene_initializer = it->second;
-  return true;
-}
-
-bool StringToEnum_EGraphSimplification
-(
-  const std::string & str,
-  EGraphSimplification & graph_simplification
-)
-{
-  const std::map<std::string, EGraphSimplification> string_to_enum_mapping =
-  {
-    {"NONE", EGraphSimplification::NONE},
-    {"MST_X", EGraphSimplification::MST_X},
-    {"STAR_X", EGraphSimplification::STAR_X},
-  };
-  auto it = string_to_enum_mapping.find(str);
-  if (it == string_to_enum_mapping.end())
-    return false;
-  graph_simplification = it->second;
   return true;
 }
 
@@ -184,11 +162,6 @@ int main(int argc, char **argv)
   // Incremental SfM pipeline options
   cmd.add( make_option('t', triangulation_method, "triangulation_method"));
   cmd.add( make_option('c', user_camera_model, "camera_model") );
-  // Stellar SfM
-  std::string graph_simplification = "MST_X";
-  int graph_simplification_value = 5;
-  cmd.add( make_option('G', graph_simplification, "graph_simplification") );
-  cmd.add( make_option('g', graph_simplification_value, "graph_simplification_value") );
 
   try {
     if (argc == 1) throw std::string("Invalid parameter.");
@@ -203,7 +176,6 @@ int main(int argc, char **argv)
       << "[-s|--sfm_engine] Type of SfM Engine to use for the reconstruction\n"
       << "\t INCREMENTAL   : add image sequentially to a 2 view seed\n"
       << "\t INCREMENTALV2 : add image sequentially to a 2 or N view seed (experimental)\n"
-      << "\t STELLAR       : n-uplets local motion refinements + global SfM\n"
       << "\n\n"
       << "[Optional parameters]\n"
       << "\n\n"
@@ -223,16 +195,7 @@ int main(int argc, char **argv)
       << "\t\t" << static_cast<int>(ETriangulationMethod::DIRECT_LINEAR_TRANSFORM) << ": DIRECT_LINEAR_TRANSFORM\n"
       << "\t\t" << static_cast<int>(ETriangulationMethod::L1_ANGULAR) << ": L1_ANGULAR\n"
       << "\t\t" << static_cast<int>(ETriangulationMethod::LINFINITY_ANGULAR) << ": LINFINITY_ANGULAR\n"
-      << "\t\t" << static_cast<int>(ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT) << ": INVERSE_DEPTH_WEIGHTED_MIDPOINT\n"
-      << "\n\n"
-      << "[STELLAR]\n"
-      << "\t[-G|--graph_simplification]\n"
-      << "\t\t -> NONE\n"
-      << "\t\t -> MST_X\n"
-      << "\t\t -> STAR_X\n"
-      << "\t[-g|--graph_simplification_value]\n"
-      << "\t\t -> Number (default: " << graph_simplification_value << ")";
-
+      << "\t\t" << static_cast<int>(ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT) << ": INVERSE_DEPTH_WEIGHTED_MIDPOINT\n";
 
     OPENMVG_LOG_ERROR << s;
     return EXIT_FAILURE;
@@ -265,18 +228,6 @@ int main(int argc, char **argv)
   if (!StringToEnum(engine_name, sfm_engine_type))
   {
     OPENMVG_LOG_ERROR << "Invalid input for the SfM Engine type";
-    return EXIT_FAILURE;
-  }
-
-  EGraphSimplification graph_simplification_method;
-  if (!StringToEnum_EGraphSimplification(graph_simplification, graph_simplification_method))
-  {
-    OPENMVG_LOG_ERROR << "Cannot recognize graph simplification method";
-    return EXIT_FAILURE;
-  }
-  if (graph_simplification_value <= 1)
-  {
-    OPENMVG_LOG_ERROR << "graph simplification value must be > 1";
     return EXIT_FAILURE;
   }
 
@@ -409,24 +360,6 @@ int main(int argc, char **argv)
     engine->SetTriangulationMethod(static_cast<ETriangulationMethod>(triangulation_method));
     engine->SetUnknownCameraType(EINTRINSIC(user_camera_model));
     engine->SetResectionMethod(static_cast<resection::SolverType>(resection::SolverType::DEFAULT));
-
-    sfm_engine.reset(engine);
-  }
-    break;
-  case ESfMEngine::STELLAR:
-  {
-    StellarSfMReconstructionEngine * engine =
-      new StellarSfMReconstructionEngine(
-        sfm_data,
-        directory_output,
-        (fs::path(directory_output) / "Reconstruction_Report.html").string());
-
-    // Configure the features_provider & the matches_provider
-    engine->SetFeaturesProvider(feats_provider.get());
-    engine->SetMatchesProvider(matches_provider.get());
-
-    // Configure reconstruction parameters
-    engine->SetGraphSimplification(graph_simplification_method, graph_simplification_value);
 
     sfm_engine.reset(engine);
   }
