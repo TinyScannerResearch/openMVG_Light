@@ -164,9 +164,6 @@ int main(int argc, char **argv)
       directory_output,
       engine_name = "INCREMENTAL";
 
-  // Bundle adjustment options:
-  std::string sIntrinsic_refinement_options = "ADJUST_ALL";
-  std::string sExtrinsic_refinement_options = "ADJUST_ALL";
   bool b_use_motion_priors = false;
 
   // Incremental SfM options
@@ -185,9 +182,6 @@ int main(int argc, char **argv)
   cmd.add( make_option('o', directory_output, "output_dir") );
   cmd.add( make_option('s', engine_name, "sfm_engine") );
 
-  // Bundle adjustment options
-  cmd.add( make_option('f', sIntrinsic_refinement_options, "refine_intrinsic_config") );
-  cmd.add( make_option('e', sExtrinsic_refinement_options, "refine_extrinsic_config") );
   cmd.add( make_switch('P', "prior_usage") );
 
   // Incremental SfM pipeline options
@@ -222,13 +216,6 @@ int main(int argc, char **argv)
       << "[Optional parameters]\n"
       << "\n\n"
       << "[Common]\n"
-      << "[-f|--refine_intrinsic_config] Intrinsic parameters refinement option\n"
-      << "\t ADJUST_ALL -> refine all existing parameters (default) \n"
-      << "\t NONE -> intrinsic parameters are held as constant\n"
-      << "\t ADJUST_FOCAL_LENGTH -> refine only the focal length\n"
-      << "\t ADJUST_PRINCIPAL_POINT -> refine only the principal point position\n"
-      << "\t ADJUST_DISTORTION -> refine only the distortion coefficient(s) (if any)\n"
-      << "\t -> NOTE: options can be combined thanks to '|'\n"
       << "\t ADJUST_FOCAL_LENGTH|ADJUST_PRINCIPAL_POINT\n"
       <<    "\t\t-> refine the focal length & the principal point position\n"
       << "\t ADJUST_FOCAL_LENGTH|ADJUST_DISTORTION\n"
@@ -301,21 +288,8 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
-  const cameras::Intrinsic_Parameter_Type intrinsic_refinement_options =
-      cameras::StringTo_Intrinsic_Parameter_Type(sIntrinsic_refinement_options);
-  if (intrinsic_refinement_options == static_cast<cameras::Intrinsic_Parameter_Type>(0) )
-  {
-    OPENMVG_LOG_ERROR << "Invalid input for Bundle Adjustment Intrinsic parameter refinement option";
-    return EXIT_FAILURE;
-  }
-
-  const sfm::Extrinsic_Parameter_Type extrinsic_refinement_options =
-      sfm::StringTo_Extrinsic_Parameter_Type(sExtrinsic_refinement_options);
-  if (extrinsic_refinement_options == static_cast<sfm::Extrinsic_Parameter_Type>(0) )
-  {
-    OPENMVG_LOG_ERROR << "Invalid input for the Bundle Adjustment Extrinsic parameter refinement option";
-    return EXIT_FAILURE;
-  }
+  const cameras::Intrinsic_Parameter_Type intrinsic_refinement_options = cameras::Intrinsic_Parameter_Type::ADJUST_ALL;
+  const sfm::Extrinsic_Parameter_Type extrinsic_refinement_options = sfm::Extrinsic_Parameter_Type::ADJUST_ALL;
 
   ESfMSceneInitializer scene_initializer_enum;
   if (!StringToEnum(sfm_initializer_method, scene_initializer_enum))
