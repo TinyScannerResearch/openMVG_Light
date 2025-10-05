@@ -161,7 +161,6 @@ int main(int argc, char **argv)
 
   // Incremental SfM pipeline options
   cmd.add( make_option('t', triangulation_method, "triangulation_method"));
-  cmd.add( make_option('c', user_camera_model, "camera_model") );
 
   try {
     if (argc == 1) throw std::string("Invalid parameter.");
@@ -185,12 +184,6 @@ int main(int argc, char **argv)
       << "[Engine specifics]\n"
       << "\n\n"
       << "[INCREMENTAL]\n"
-      << "\t[-c|--camera_model] Camera model type for view with unknown intrinsic:\n"
-      << "\t\t 1: Pinhole \n"
-      << "\t\t 2: Pinhole radial 1\n"
-      << "\t\t 3: Pinhole radial 3 (default)\n"
-      << "\t\t 4: Pinhole radial 3 + tangential 2\n"
-      << "\t\t 5: Pinhole fisheye\n"
       << "\t[--triangulation_method] triangulation method (default=" << triangulation_method << "):\n"
       << "\t\t" << static_cast<int>(ETriangulationMethod::DIRECT_LINEAR_TRANSFORM) << ": DIRECT_LINEAR_TRANSFORM\n"
       << "\t\t" << static_cast<int>(ETriangulationMethod::L1_ANGULAR) << ": L1_ANGULAR\n"
