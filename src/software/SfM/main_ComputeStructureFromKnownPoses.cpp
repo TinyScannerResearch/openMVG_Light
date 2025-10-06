@@ -21,7 +21,6 @@
 #include "openMVG/sfm/sfm_data_filters.hpp"
 #include "openMVG/sfm/sfm_data_filters_frustum.hpp"
 #include "openMVG/sfm/sfm_data_io.hpp"
-#include "openMVG/sfm/sfm_report.hpp"
 #include "openMVG/sfm/sfm_data_triangulation.hpp"
 #include "openMVG/tracks/tracks.hpp"
 #include "openMVG/system/loggerprogress.hpp"
@@ -355,10 +354,6 @@ int main(int argc, char **argv)
   RemoveOutliers_AngleError(sfm_data, 2.0);
 
   OPENMVG_LOG_INFO << "#landmark found: " << sfm_data.GetLandmarks().size();
-
-  OPENMVG_LOG_INFO << "...Generating SfM_Report.html";
-  Generate_SfM_Report(sfm_data,
-    stlplus::create_filespec(stlplus::folder_part(sOutFile), "SfMStructureFromKnownPoses_Report.html"));
 
   if (cmd.used('b'))
   {

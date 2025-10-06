@@ -30,7 +30,6 @@
 //-----------------
 // SfM pipelines
 //-----------------
-#include "openMVG/sfm/sfm_report.hpp"
 #include "openMVG/sfm/pipelines/global/sfm_global_reindex.hpp"
 #include "openMVG/sfm/pipelines/global/sfm_global_engine_relative_motions.hpp"
 #include "openMVG/sfm/pipelines/localization/SfM_Localizer.hpp"
