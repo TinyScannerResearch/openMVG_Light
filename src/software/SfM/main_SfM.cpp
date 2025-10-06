@@ -22,7 +22,6 @@
 #include "openMVG/sfm/pipelines/sequential/sequential_SfM.hpp"
 #include "openMVG/sfm/pipelines/sequential/sequential_SfM2.hpp"
 #include "openMVG/sfm/pipelines/sequential/SfmSceneInitializerMaxPair.hpp"
-#include "openMVG/sfm/pipelines/sequential/SfmSceneInitializerStellar.hpp"
 
 #include "third_party/cmdLine/cmdLine.h"
 
@@ -43,8 +42,7 @@ enum class ESfMSceneInitializer
 {
   INITIALIZE_EXISTING_POSES,
   INITIALIZE_MAX_PAIR,
-  INITIALIZE_AUTO_PAIR,
-  INITIALIZE_STELLAR
+  INITIALIZE_AUTO_PAIR
 };
 
 enum class ESfMEngine
@@ -81,8 +79,7 @@ bool StringToEnum
   {
     {"EXISTING_POSE", ESfMSceneInitializer::INITIALIZE_EXISTING_POSES},
     {"MAX_PAIR", ESfMSceneInitializer::INITIALIZE_MAX_PAIR},
-    {"AUTO_PAIR", ESfMSceneInitializer::INITIALIZE_AUTO_PAIR},
-    {"STELLAR", ESfMSceneInitializer::INITIALIZE_STELLAR},
+    {"AUTO_PAIR", ESfMSceneInitializer::INITIALIZE_AUTO_PAIR}
   };
   const auto it  = string_to_enum_mapping.find(str);
   if (it == string_to_enum_mapping.end())
@@ -149,7 +146,7 @@ int main(int argc, char **argv)
   int user_camera_model = PINHOLE_CAMERA_RADIAL3;
 
   // SfM v2
-  std::string sfm_initializer_method = "STELLAR";
+  std::string sfm_initializer_method = "MAX_PAIR";
 
   // Common options
   cmd.add( make_option('i', filename_sfm_data, "input_file") );
@@ -296,11 +293,6 @@ int main(int argc, char **argv)
     scene_initializer.reset(new SfMSceneInitializer(sfm_data,
                             feats_provider.get(),
                             matches_provider.get()));
-    break;
-  case ESfMSceneInitializer::INITIALIZE_STELLAR:
-    scene_initializer.reset(new SfMSceneInitializerStellar(sfm_data,
-                                 feats_provider.get(),
-                                 matches_provider.get()));
     break;
   default:
     OPENMVG_LOG_ERROR << "Unknown SFM Scene initializer method";
