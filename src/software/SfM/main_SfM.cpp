@@ -360,10 +360,6 @@ int main(int argc, char **argv)
   {
     OPENMVG_LOG_INFO << " Total Sfm took (s): " << timer.elapsed();
 
-    OPENMVG_LOG_INFO << "...Generating SfM_Report.html";
-    Generate_SfM_Report(sfm_engine->Get_SfM_Data(),
-              (fs::path(directory_output) / "SfMReconstruction_Report.html").string());
-
     //-- Export to disk computed scene (data & viewable results)
     OPENMVG_LOG_INFO << "...Export SfM_Data to disk.";
     Save(sfm_engine->Get_SfM_Data(),
