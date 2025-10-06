@@ -156,9 +156,6 @@ int main(int argc, char **argv)
 
   cmd.add( make_switch('P', "prior_usage") );
 
-  // Incremental SfM pipeline options
-  cmd.add( make_option('t', triangulation_method, "triangulation_method"));
-
   try {
     if (argc == 1) throw std::string("Invalid parameter.");
     cmd.process(argc, argv);
@@ -176,16 +173,7 @@ int main(int argc, char **argv)
       << "[Optional parameters]\n"
       << "\n\n"
       << "[Common]\n"
-      << "[-P|--prior_usage] Enable usage of motion priors (i.e GPS positions) (default: false)\n"
-      << "\n\n"
-      << "[Engine specifics]\n"
-      << "\n\n"
-      << "[INCREMENTAL]\n"
-      << "\t[--triangulation_method] triangulation method (default=" << triangulation_method << "):\n"
-      << "\t\t" << static_cast<int>(ETriangulationMethod::DIRECT_LINEAR_TRANSFORM) << ": DIRECT_LINEAR_TRANSFORM\n"
-      << "\t\t" << static_cast<int>(ETriangulationMethod::L1_ANGULAR) << ": L1_ANGULAR\n"
-      << "\t\t" << static_cast<int>(ETriangulationMethod::LINFINITY_ANGULAR) << ": LINFINITY_ANGULAR\n"
-      << "\t\t" << static_cast<int>(ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT) << ": INVERSE_DEPTH_WEIGHTED_MIDPOINT\n";
+      << "[-P|--prior_usage] Enable usage of motion priors (i.e GPS positions) (default: false)\n";
 
     OPENMVG_LOG_ERROR << s;
     return EXIT_FAILURE;
@@ -348,9 +336,9 @@ int main(int argc, char **argv)
 
     sfm_engine.reset(engine);
   }
-  break;
+    break;
   default:
-  break;
+    break;
   }
   if (!sfm_engine)
   {
