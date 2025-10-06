@@ -227,7 +227,24 @@ bool Triangulate2View
   ETriangulationMethod etri_method
 )
 {
-  return TriangulateIDWMidpoint(R0, t0, bearing0, R1, t1, bearing1, &X);
+  switch (etri_method)
+  {
+    case ETriangulationMethod::DIRECT_LINEAR_TRANSFORM:
+      return TriangulateDLT(R0, t0, bearing0, R1, t1, bearing1, &X);
+    break;
+    case ETriangulationMethod::L1_ANGULAR:
+      return TriangulateL1Angular(R0, t0, bearing0, R1, t1, bearing1, &X);
+    break;
+    case ETriangulationMethod::LINFINITY_ANGULAR:
+      return TriangulateLInfinityAngular(R0, t0, bearing0, R1, t1, bearing1, &X);
+    break;
+    case ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT:
+      return TriangulateIDWMidpoint(R0, t0, bearing0, R1, t1, bearing1, &X);
+    break;
+    default:
+      return false;
+  }
+  return false;
 }
 
 }  // namespace openMVG

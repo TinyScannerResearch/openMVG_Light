@@ -110,7 +110,7 @@ private:
   std::unique_ptr<openMVG::tracks::SharedTrackVisibilityHelper> shared_track_visibility_helper_;
 
   /// 2View triangulation method used in the robust triangulation engine
-  ETriangulationMethod triangulation_method_ = ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT;
+  ETriangulationMethod triangulation_method_ = ETriangulationMethod::DEFAULT;
 
   resection::SolverType resection_method_ = resection::SolverType::DEFAULT;
 };

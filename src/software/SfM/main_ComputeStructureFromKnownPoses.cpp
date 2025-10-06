@@ -66,7 +66,7 @@ int main(int argc, char **argv)
   std::string sSfm_data_tracks;
   double dMax_reprojection_error = 4.0;
   unsigned int ui_max_cache_size = 0;
-  int triangulation_method = static_cast<int>(ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT);
+  int triangulation_method = static_cast<int>(ETriangulationMethod::DEFAULT);
 
   cmd.add( make_option('i', sSfM_Data_Filename, "input_file") );
   cmd.add( make_option('m', sMatchesDir, "match_dir") );
@@ -103,6 +103,11 @@ int main(int argc, char **argv)
     << " [C. Tracks stored as landmark observations in a sfm_data file]\n"
     << "\t[-T|--sfm_data_tracks] path to sfm_data files with Landmarks observations (i.e from openMVG_main_VO)\n"
 
+    << "[-t|--triangulation_method] triangulation method (default=" << triangulation_method << "):\n"
+    << "\t" << static_cast<int>(ETriangulationMethod::DIRECT_LINEAR_TRANSFORM) << ": DIRECT_LINEAR_TRANSFORM\n"
+    << "\t" << static_cast<int>(ETriangulationMethod::L1_ANGULAR) << ": L1_ANGULAR\n"
+    << "\t" << static_cast<int>(ETriangulationMethod::LINFINITY_ANGULAR) << ": LINFINITY_ANGULAR\n"
+    << "\t" << static_cast<int>(ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT) << ": INVERSE_DEPTH_WEIGHTED_MIDPOINT\n"
     << "\n[Optional]\n"
     << "[-b|--bundle_adjustment] (switch) perform a bundle adjustment on the scene (OFF by default)\n"
     << "[-r|--residual_threshold] maximal pixels reprojection error that will be considered for triangulations (4.0 by default)\n"
@@ -111,6 +116,11 @@ int main(int argc, char **argv)
     << "  If not used, all regions will be load in memory.\n";
 
     OPENMVG_LOG_ERROR<< s;
+    return EXIT_FAILURE;
+  }
+
+  if ( !isValid(static_cast<ETriangulationMethod>(triangulation_method))) {
+    OPENMVG_LOG_ERROR << "\n Invalid triangulation method";
     return EXIT_FAILURE;
   }
 

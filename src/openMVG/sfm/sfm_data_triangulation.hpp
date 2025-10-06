@@ -55,7 +55,7 @@ struct SfM_Data_Structure_Computation_Robust: public SfM_Data_Structure_Computat
     const double max_reprojection_error = 4.0, // pixels
     const IndexT min_required_inliers = 3,
     const IndexT min_sample_index = 3,
-    const ETriangulationMethod etri_method = ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT,
+    const ETriangulationMethod etri_method = ETriangulationMethod::DEFAULT,
     bool bConsoleVerbose = false
   );
 

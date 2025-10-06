@@ -37,6 +37,7 @@ using namespace openMVG;
 using namespace openMVG::cameras;
 using namespace openMVG::sfm;
 
+
 enum class ESfMSceneInitializer
 {
   INITIALIZE_EXISTING_POSES,
@@ -141,7 +142,7 @@ int main(int argc, char **argv)
   bool b_use_motion_priors = false;
 
   // Incremental SfM options
-  int triangulation_method = static_cast<int>(ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT);
+  int triangulation_method = static_cast<int>(ETriangulationMethod::DEFAULT);
   int user_camera_model = PINHOLE_CAMERA_RADIAL3;
 
   // SfM v2
@@ -179,6 +180,12 @@ int main(int argc, char **argv)
   }
 
   b_use_motion_priors = cmd.used('P');
+
+  // Check validity of command line parameters:
+  if ( !isValid(static_cast<ETriangulationMethod>(triangulation_method))) {
+    OPENMVG_LOG_ERROR << "Invalid triangulation method";
+    return EXIT_FAILURE;
+  }
 
   if ( !isValid(openMVG::cameras::EINTRINSIC(user_camera_model)) )  {
     OPENMVG_LOG_ERROR << "Invalid camera type";

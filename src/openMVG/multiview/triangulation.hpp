@@ -36,7 +36,7 @@ bool Triangulate2View
   const Vec3 &t1,
   const Vec3 &bearing1,
   Vec3 &X,
-  ETriangulationMethod etri_method = ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT
+  ETriangulationMethod etri_method = ETriangulationMethod::DEFAULT
 );
 
 /**
