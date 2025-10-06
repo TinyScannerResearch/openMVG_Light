@@ -15,7 +15,6 @@
 #include "openMVG/sfm/sfm_data_io.hpp"
 #include "openMVG/sfm/sfm_report.hpp"
 #include "openMVG/sfm/sfm_view.hpp"
-#include "openMVG/system/timer.hpp"
 #include "openMVG/types.hpp"
 
 // SfM Engines
@@ -25,6 +24,7 @@
 
 #include "third_party/cmdLine/cmdLine.h"
 
+#include <chrono>
 #include <cstdlib>
 #include <filesystem>
 #include <memory>
@@ -354,11 +354,14 @@ int main(int argc, char **argv)
   // Sequential reconstruction process
   //---------------------------------------
 
-  openMVG::system::Timer timer;
+  auto t0 = std::chrono::steady_clock::now();
 
   if (sfm_engine->Process())
   {
-    OPENMVG_LOG_INFO << " Total Sfm took (s): " << timer.elapsed();
+    auto t1 = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(t1 - t0).count();
+
+    OPENMVG_LOG_INFO << " Total Sfm took (s): " << elapsed;
 
     //-- Export to disk computed scene (data & viewable results)
     OPENMVG_LOG_INFO << "...Export SfM_Data to disk.";
