@@ -111,23 +111,11 @@ target_link_libraries(openMVG_main_ComputeStructureFromKnownPoses
     ${CERES_LIBRARIES}
 )
 
-add_executable(openMVG_main_ComputeSfM_DataColor main_ComputeSfM_DataColor.cpp)
-target_link_libraries(openMVG_main_ComputeSfM_DataColor
-  PRIVATE
-    openMVG_system
-    openMVG_image
-    openMVG_features
-    openMVG_sfm
-    ${STLPLUS_LIBRARY}
-)
-
 # Installation rules
 set_property(TARGET openMVG_main_SfM PROPERTY FOLDER OpenMVG/software)
 install(TARGETS openMVG_main_SfM DESTINATION bin/)
 set_property(TARGET openMVG_main_ComputeStructureFromKnownPoses PROPERTY FOLDER OpenMVG/software)
 install(TARGETS openMVG_main_ComputeStructureFromKnownPoses DESTINATION bin/)
-set_property(TARGET openMVG_main_ComputeSfM_DataColor PROPERTY FOLDER OpenMVG/software)
-install(TARGETS openMVG_main_ComputeSfM_DataColor DESTINATION bin/)
 
 ##
 # Export tutorial with valid path thanks to a configuration file
