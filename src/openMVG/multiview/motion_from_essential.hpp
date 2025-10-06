@@ -43,7 +43,7 @@ bool RelativePoseFromEssential
   std::vector<uint32_t> * vec_selected_points = nullptr,
   std::vector<Vec3> * vec_points = nullptr,
   const double positive_depth_solution_ratio = 0.7,
-  const ETriangulationMethod triangulation_method = ETriangulationMethod::DEFAULT
+  const ETriangulationMethod triangulation_method = ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT
 );
 
 } // namespace openMVG

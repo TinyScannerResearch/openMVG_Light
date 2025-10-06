@@ -128,7 +128,7 @@ private:
 
   std::set<uint32_t> set_remaining_view_id_;     // Remaining camera index that can be used for resection
 
-  ETriangulationMethod triangulation_method_ = ETriangulationMethod::DEFAULT;
+  ETriangulationMethod triangulation_method_ = ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT;
 
   resection::SolverType resection_method_ = resection::SolverType::DEFAULT;
 };

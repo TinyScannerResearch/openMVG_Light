@@ -14,19 +14,8 @@ namespace openMVG
 /// Define various enumerate for each available two view triangulation solver
 enum class ETriangulationMethod : unsigned char
 {
-  DIRECT_LINEAR_TRANSFORM, // DLT
-  L1_ANGULAR,
-  LINFINITY_ANGULAR,
-  INVERSE_DEPTH_WEIGHTED_MIDPOINT,
-  DEFAULT = INVERSE_DEPTH_WEIGHTED_MIDPOINT
+  INVERSE_DEPTH_WEIGHTED_MIDPOINT
 };
-
-static inline bool isValid( const ETriangulationMethod method )
-{
-  return
-    method >= ETriangulationMethod::DIRECT_LINEAR_TRANSFORM &&
-    method <= ETriangulationMethod::DEFAULT;
-}
 
 }  // namespace openMVG
 

@@ -55,7 +55,7 @@ public:
 private:
   Relative_Pair_Poses relative_poses_;
 
-  ETriangulationMethod triangulation_method_ = ETriangulationMethod::DEFAULT;
+  ETriangulationMethod triangulation_method_ = ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT;
 };
 
 } // namespace sfm

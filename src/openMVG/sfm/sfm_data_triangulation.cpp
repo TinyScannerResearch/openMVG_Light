@@ -47,7 +47,7 @@ bool track_triangulation
   const SfM_Data & sfm_data,
   const Observations & obs,
   Vec3 & X,
-  const ETriangulationMethod & etri_method = ETriangulationMethod::DEFAULT
+  const ETriangulationMethod & etri_method = ETriangulationMethod::INVERSE_DEPTH_WEIGHTED_MIDPOINT
 )
 {
   if (obs.size() >= 2)
